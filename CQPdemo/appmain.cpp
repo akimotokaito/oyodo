@@ -2,6 +2,7 @@
 * CoolQ Demo for VC++ 
 * Api Version 9
 * Written by Coxxs & Thanks for the help of orzFly
+* Modified by steve
 */
 
 #include "stdafx.h"
