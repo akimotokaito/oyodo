@@ -39,7 +39,8 @@ typedef int32_t CQBOOL;
 #define MY_QQNUM 526975248
 #define MY_GRPNUM 45694267
 #define TEST_QQNUM 2043128624
-
+#define TEST_GRPNUM 237712764
+#define KANC_GRPNUM 531550460
 
 CQAPI(int32_t) CQ_sendPrivateMsg(int32_t AuthCode, int64_t QQID, const char *msg);
 CQAPI(int32_t) CQ_sendGroupMsg(int32_t AuthCode, int64_t groupid, const char *msg);

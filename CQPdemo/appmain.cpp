@@ -2,7 +2,6 @@
 * CoolQ Demo for VC++ 
 * Api Version 9
 * Written by Coxxs & Thanks for the help of orzFly
-* Modified by steve
 */
 
 #include "stdafx.h"
@@ -285,6 +284,7 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 	string now_time;
 	//BOOL isFirst = true;
 	BOOL nFlag = true; //记录是否报过当前时,true为没报过时，false为报过
+	BOOL newFirst = true; //新年第一次报时flag
 	int lasthour = -1;
 	SYSTEMTIME sys;
 	//struct tm *aa;
@@ -314,7 +314,20 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 		GetLocalTime(&sys);
 		//sprintf(timez, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d\n", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds, sys.wDayOfWeek);
 		//now_time = timez;
-		if (sys.wMinute == 0) {
+
+		if (newFirst && sys.wDay == 28 && sys.wMonth == 1 && sys.wYear == 2017){ //28号后报时一次
+			string sendmsg;
+			string sendmsgmygrp;
+			string sendmsgkcgrp;
+			newFirst = false;
+			sendmsg += "已是新的一年了，新年快乐~！\n今年也请各位多多关照。\n这里是大淀我一点小小心意，\n感谢各位长时间以来的支持！\n";
+			sendmsgmygrp += sendmsg;
+			sendmsgmygrp += "请您打开支付宝-口令红包，\n输入：“淀酱祝您新年快乐哟”\n领取由@苹果 赞助的红包~";
+			CQ_sendGroupMsg(ac, MY_GRPNUM, sendmsgmygrp.c_str());
+			sendmsgkcgrp += sendmsg;
+			sendmsgkcgrp += "请您打开支付宝-口令红包，\n输入：“淀酱祝各位提督新年快乐”\n领取由淀酱的父亲@小秋 赞助的红包~";
+			CQ_sendGroupMsg(ac, KANC_GRPNUM, sendmsgkcgrp.c_str());
+		}else if (sys.wMinute == 0) {
 			if (nFlag) { //如果没报过时 就报一次时，且记录下最后一次报时的小时数
 				string sendmsg;
 				ifstream File;
@@ -371,7 +384,7 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 			}
 			
 		}
-		Sleep(20000);
+		Sleep(15000);
 		
 	}
 

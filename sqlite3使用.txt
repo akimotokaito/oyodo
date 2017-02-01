@@ -1,0 +1,177 @@
+方式一：利用回调函数callback
+
+回调函数格式：
+
+int callback(void*para , int nCount, char** pValue, char** pName) {
+    /*****************************************************************************
+          sqlite 每查到一条记录，就调用一次这个回调
+          para是你在 sqlite3_exec 里传入的 void * 参数, 通过para参数，你可以传入一些特殊的指针（比如类指  针、结构指针），然后在这里面强制转换成对应的类型（这里面是void*类型，必须强制转换成你的类型才可用）。然后操作这些数据
+          nCount是这一条(行)记录有多少个字段 (即这条记录有多少列)
+          char ** pValue 是个关键值，查出来的数据都保存在这里，它实际上是个1维数组（不要以为是2维数组），每一个元素都是一个 char* 值，是一个字段内容（用字符串来表示，以/0结尾）
+          char ** pName 跟pValue是对应的，表示这个字段的字段名称, 也是个1维数组
+     *****************************************************************************/
+     string s; 
+      for(int i=0;i<nCount;i++){ 
+          s+=pName[i]; 
+          s+=":"; 
+          s+=pValue[i]; 
+          s+="\n";  
+    } 
+    cout<<s<<endl; 
+    return 0; 
+ }
+
+执行sql语句： 
+int sqlite3_exec(sqlite3*, const char *sql,sqlite3_callback, void *,char **errmsg); 
+第1个参数不再说了，是前面open函数得到的指针。说了是关键数据结构。 
+第2个参数constchar *sql 是一条 sql 语句，以/0结尾。 
+第3个参数sqlite3_callback 是回调，当这条语句执行之后，sqlite3会去调用你提供的这个函数。（若是封装成类的，必须将回调函数设置为static，否则this指针不对应无法调用） 
+第4个参数void* 是你所提供的指针，你可以传递任何一个指针参数到这里，这个参数最终会传到回调函数里面，如果不需要传递指针给回调函数，可以填NULL。等下我们再看回调函数的写法，以及这个参数的使用。 
+第5个参数char** errmsg 是错误信息。注意是指针的指针。sqlite3里面有很多固定的错误信息。执行 sqlite3_exec 之后，执行失败时可以查阅这个指针（直接 printf(“%s/n”,errmsg)）得到一串字符串信息，这串信息告诉你错在什么地方。sqlite3_exec函数通过修改你传入的指针的指针，把你提供的指针指向错误提示信息，这样sqlite3_exec函数外面就可以通过这个 char*得到具体错误提示。
+
+
+
+方式二：sqlite3_get_table
+
+函数分析： 
+int sqlite3_get_table(sqlite3*, const char *sql, char ***resultp, int *nrow, int *ncolumn, char **errmsg);
+第1个参数不再多说，看前面的例子。 
+第2个参数是 sql 语句，跟 sqlite3_exec 里的 sql 是一样的。是一个很普通的以/0结尾的char *字符串。 
+第3个参数是查询结果，它依然一维数组（不要以为是二维数组，更不要以为是三维数组）。它内存布局是：resultp的字段值是连续的，第一行是字段名称，后面是紧接着是每个字段的值。从第0索引到第 nColumn - 1索引都是字段名称，从第nColumn 索引开始，后面都是字段值，它把一个二维的表（传统的行列表示法）用一个扁平的形式来表示。 
+//第n列的名称，存放于resultp [nrow] 
+//第n行第m列的数据，存放于resultp [(nrow+ 1) * nColumn + m] 
+下面用例子来说事。 
+第4个参数是查询出多少条记录（即查出多少行）。 
+第5个参数是多少个字段（多少列）。 
+第6个参数是错误信息。
+
+Eg:
+string strSql = "select * from MyTable";  
+char** pResult;  
+int nRow;   
+int nCol;
+nResult = sqlite3_get_table(db,strSql.c_str(),&pResult,&nRow,&nC,&errmsg);  
+if (nResult != SQLITE_OK)  
+{  
+  sqlite3_close(db);  
+  cout<<errmsg<<endl;  
+  sqlite3_free(errmsg);  
+  return 0;  
+}
+
+   string strOut;  
+   int nIndex = nCol;  
+   for(int i=0;i<nRow;i++)  
+   {  
+       for(int j=0;j<nCol;j++)  
+       {  
+           strOut+=pResult[j];  
+           strOut+=":";  
+           strOut+=pResult[nIndex];  
+           strOut+="\n";  
+           ++nIndex;  
+       }  
+   }  
+sqlite3_free_table(pResult);  //使用完后务必释放为记录分配的内存，否则会内存泄漏
+   cout<<strOut<<endl;  
+   sqlite3_close(db);  
+   return 0;  
+ } 
+
+
+方式三：通过sqlite3_prepare、sqlite3_step一系列操作
+
+虽然回调显得代码整齐，又想避免sqlite3_get_table之后麻烦的一维数组遍历，那么利用sqlite3_prepare_v2执行sql select语句，让后sqlite3_step遍历select执行的返回结果是一个非常方便的solution. 当然，你必须要明白sqlite3_prepare_v2不仅仅能够执行table的query selection，也能方便地进行sql Delete, Insert, Update等其他一些操作。它能帮你把sql语句的执行操作变的更加优雅。
+
+相关函数分析： 
+1. int sqlite3_prepare_v2( 
+sqlite3*db, /* Database handle(数据库指针) */ 
+const char*zSql, /* SQL statement, UTF-8encoded(使用UTF-8编码的SQL语句) */ 
+int nByte, /* Maximum length of zSql inbytes.(如果nByte小于0，则函数取出zSql中从开始到第一个0终止符的内容；如果nByte为非负数，那么它就是这个函数能从zSql中读取的最大字节数。zSql在第一次遇见/000或u000的时候终止) */ 
+sqlite3_stmt *ppStmt, / OUT:Statement handle(能够使用sqlite3_step()执行的编译好的准备语句的指针，如果错误发生，它被置为NULL，例如输入一个不正确的sql语句。调用过程必须负责在编译好的sql语句完成使用后，调用sqlite3_finalize()删除它。 */ 
+const char**pzTail /* OUT: Pointer to unusedportion of zSql(当zSql在遇见终止符或者达到设定的nByte结束后，如果还有剩余的内容，那么这些剩余的内容将被存放到pzTail中，不包含终止符) */ 
+); 
+2. int sqlite3_step(sqlite3_stmt*); 
+sqlite3_step的返回值取决于创建sqlite3_stmt参数所使用的函数，假如使用老版本的接口sqlite3_prepare()或sqlite3_prepare16()，返回值会是SQLITE_BUSY、SQLITE_DONE， SQLITE_ROW， SQLITE_ERROR 或 SQLITE_MISUSE；而v2版本的接口sqlite3_prepare_v2()和sqlite3_prepare16_v2()除了这些值以外，还可能返回扩展状态码。
+
+3 . int sqlite3_reset(sqlite3_stmt *pStmt); 
+sqlite3_reset 重置一个准备语句(prepared statement)对象到它的初始状态，准备被重新执行。在V3.6.23.1以后，sqlite3_step()将会自动调用sqlite3_reset。 
+int sqlite3_finalize(sqlite3_stmt *pStmt); 
+sqlite3_finalize — 销毁一个准备语句(prepared statement)对象，在需要时执行这个销毁函数以防止内存泄露。在准备语句对象为空指针时调用这个函数也没有什么影响。
+
+4 . sqlite3_column —并不存在sqlite3_column这个函数，它只是一个前缀，下面是相关的具体函数： 
+const void*sqlite3_column_blob(sqlite3_stmt*, int 
+intsqlite3_column_bytes(sqlite3_stmt*, int iCol); 
+intsqlite3_column_bytes16(sqlite3_stmt*, int iCol); 
+doublesqlite3_column_double(sqlite3_stmt*, int iCol); 
+intsqlite3_column_int(sqlite3_stmt*, int iCol); 
+sqlite3_int64sqlite3_column_int64(sqlite3_stmt*, int 
+constunsigned char sqlite3_column_text(sqlite3_stmt, 
+const void*sqlite3_column_text16(sqlite3_stmt*, int 
+intsqlite3_column_type(sqlite3_stmt*, int iCol); 
+sqlite3_value*sqlite3_column_value(sqlite3_stmt*, int iCol); 
+上面的函数用来得到结果集当前行中某一列的值，列索引从0开始。
+
+注意点： 
+1. 调用sqlite3_prepare()将SQL语句编译为sqlite内部一个结构体(sqlite3_stmt).该结构体中包含了将要执行的的SQL语句的信息. 
+2. 如果需要传入参数,在SQL语句中用’?’作为占位符,再调用sqlite3_bind_XXX()函数将对应的参数传入. 
+3. 调用sqlite3_step(),这时候SQL语句才真正执行.注意该函数的返回值,SQLITE_DONE和SQLITE_ROW都是表示执行成功,不同的是SQLITE_DONE表示没有查询结果,像UPDATE,INSERT这些SQL语句都是返回SQLITE_DONE,SELECT查询语句在查询结果不为空的时候返回SQLITE_ROW,在查询结果为空的时候返回SQLITE_DONE.（SQLITE_DONE尽管被归结为error code，但是不代表着执行错误，而是意味着查询结果为空。SQLITE_OK表示执行结束并有查询结果。） 
+4. 每次调用sqlite3_step()的时候,只返回一行数据,使用sqlite3_column_XXX()函数来取出这些数据.要取出全部的数据需要反复调用sqlite3_step(). (注意,在bind参数的时候,参数列表的index从1开始,而取出数据的时候,列的index是从0开始). 
+5. 在SQL语句使用完了之后要调用sqlite3_finalize()来释放stmt占用的内存.该内存是在sqlite3_prepare()时分配的. 
+6. 如果SQL语句要重复使用,可以调用sqlite3_reset()来清楚已经绑定的参数. 
+7. 对于新的应用不建议使用sqlite3_prepare()，而应使用架构更新的程序sqlite3_prepare_v2()代替。 
+8. 对于很多SQL语句来说，执行sqlite3_prepare()的时间等于或者超过执行sqlite3_step()的时间。所以避免频繁调用sqlite3_prepare(）可以显著提升性能。
+
+实例： 
+Eg1：
+//查询所有数据 
+sqlite3 *db; 
+sqlite3_stmt * stmt = NULL; 
+const char *zTail;
+int r =sqlite3_open("mysqlite.db",&db) //打开数据库 
+if (sqlite3_prepare_v2(db, 
+           "SELECT ID, name, num FROM players;", -1, &stmt, &zTail) ==SQLITE_OK){       
+    while( sqlite3_step(stmt) ==SQLITE_ROW ) { 
+            int id =sqlite3_column_int( stmt, 0); 
+            constunsigned char * name = sqlite3_column_text( stmt,1); 
+            intnumber = sqlite3_column_int( stmt, 2); 
+           printf("ID: %d  Name: %s  Age: %d /n",id,name,number); 
+     } 
+}
+sqlite3_finalize(stmt); 
+//关闭数据库 
+sqlite3_close(db); 
+
+
+方式四：利用事务(BEGIN;COMMIT;)批量操作
+
+如果要进行大量的操作，比如要插入10000条数据，如果逐条执行SQL语句，则消耗的时间非常长。采用事务的方式批量处理，可以极大程度提升操作速度(我用1000条记录实验了一下，速度提高了500倍以上)。sqlite3_exec可以执行任何sql语句，包括事务(“BEGIN TRANSACTION”)、回滚(“ROLLBACK”)和提交(“COMMIT”)等等 
+Eg1.
+//插入条数据(在Begin和Commit之间批量操作，可以大幅度提高效率)
+result =sqlite3_exec(db, "BEGIN;",0, 0, 0);
+for (int i=0; i<10000; i++)
+{
+    //插入一条数据
+    result = sqlite3_exec(db,
+        "INSERT INTOMyTable (MyText, MyDate, MyTime, MyFloat) VALUES ('---上班好远!', '2012-03-23', '9:00:00', 1000);",
+        0, 0, 0);
+}
+result =sqlite3_exec(db, "COMMIT;",0, 0, 0); .
+
+Eg2.
+string strSql;  
+strSql+="begin;\n";  
+for (int i=0;i<100;i++)  
+{  
+    strSql+="insert into MyTable values(null,'heh');\n";  
+}  
+strSql+="commit;";  
+//cout<<strSql<<endl;  
+
+nResult = sqlite3_exec(db,strSql.c_str(),NULL,NULL,&errmsg);  
+
+
+总结：sqlite3_exec()接口是一个方便的包装器，调用一个方法便可执行上面的四个步骤。传递到sqlite3_exec()中的回调函数将用于处理每行结果集。 sqlite3_get_table()是另一个方便的包装器，同样可以用上述的四个步骤。与 sqlite3_exec()不同的是，sqlite3_get_table()将结果存储在堆存储器里而非调用回调函数。
+
+
+
