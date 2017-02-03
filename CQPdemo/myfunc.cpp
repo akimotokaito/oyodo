@@ -39,12 +39,12 @@ int charge(const char *rcvmsg, string & sendmsg)
 		tmpstr = replace_all_distinct(tmpstr, "[CQ:at,qq=2469931868]", " ");
 		return charge(tmpstr.c_str(), sendmsg);
 	}
-	if (tmpstr.size() > 100) {
-		return 0;
-	}
 	if (strstr(tmpstr.c_str(),"远征") != NULL)
 	{
 		//sql_search(rcvmsg, sendmsg);
+		if (tmpstr.size() > 100) {
+			return 0;
+		}
 		if(strstr(tmpstr.c_str(),"远征") != tmpstr){
 			sendmsg = "提督您想了解远征相关的事的话，输入“远征”我会详细告诉您的！";
 			ret = 1;
@@ -53,6 +53,9 @@ int charge(const char *rcvmsg, string & sendmsg)
 		}
 	}else if (strstr(tmpstr.c_str(),"攻略") != NULL)
 	{
+		if (tmpstr.size() > 100) {
+			return 0;
+		}
 		if(strstr(tmpstr.c_str(),"攻略") != tmpstr){
 			sendmsg = "提督您想了解攻略相关的事的话，输入“攻略”我会详细告诉您的！";
 			ret = 2;
@@ -85,14 +88,30 @@ long long sendgroupmsg(const char *msg, string & sendmsg)
 	rcvmsg = split(tempmsg, " ");
 	if (rcvmsg.size() > 1)
 	{
-		if (rcvmsg[0] == "")
+		/*if (rcvmsg[0] == "")
 		{		
 			ret = atoi(rcvmsg[1].c_str());
 			sendmsg = rcvmsg[2];
 		}else{
 			ret = atoi(rcvmsg[0].c_str());
 			sendmsg = rcvmsg[1];
+		}*/
+		if (rcvmsg[0] == "")
+		{
+			ret = atoi(rcvmsg[1].c_str());
+			for (int i = 2; i < rcvmsg.size(); i++) {
+				sendmsg += rcvmsg[i];
+				sendmsg += ' ';
+			}
 		}
+		else {
+			ret = atoi(rcvmsg[0].c_str());
+			for (int i = 1; i < rcvmsg.size(); i++) {
+				sendmsg += rcvmsg[i];
+				sendmsg += ' ';
+			}
+		}
+
 
 	}
 	return ret;
