@@ -618,7 +618,7 @@ bool isManagerQQ(int64_t fromQQ)
 {
 	int64_t managerQQ[3] = { MY_QQNUM , TEST_QQNUM, 839551855};
 	
-	for (int i = 0; i < sizeof(managerQQ); i++) {
+	for (int i = 0; i < sizeof(managerQQ)/sizeof(int64_t); i++) {
 		if (fromQQ == managerQQ[i]) {
 			return true;
 		}
