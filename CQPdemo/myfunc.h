@@ -12,6 +12,14 @@
 
 using namespace std;
 
+
+enum WorkStatus
+{
+	WORK = 0,
+	NOTWORK,
+	DEVELOPMODE
+};
+
 std::vector<std::string> split(std::string str,std::string pattern);
 int charge(const char *rcvmsg, string & sendmsg);
 int yuanzheng(const char *msg, string & sendmsg);
@@ -27,4 +35,6 @@ string ws2s(const std::wstring& ws);
 wstring s2ws(const std::string& s);
 bool isNum(string str);
 string&   replace_all_distinct(string&   str, const  string&  old_value, const   string&   new_value);
+bool isManagerQQ(int64_t fromQQ);
+
 #endif
