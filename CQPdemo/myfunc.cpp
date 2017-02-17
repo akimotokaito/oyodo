@@ -3,6 +3,12 @@
 using namespace std;
 sqlite3 *pDB;
 
+#define MY_QQNUM 526975248
+#define MY_GRPNUM 45694267
+#define TEST_QQNUM 2043128624
+#define TEST_GRPNUM 237712764
+#define KANC_GRPNUM 531550460
+
 //字符串分割函数
 vector<string> split(string str,string pattern)
 {
@@ -35,6 +41,12 @@ int charge(const char *rcvmsg, string & sendmsg)
 		tmpstr.erase(0, 1);
 	}
 
+	if (strcmp(tmpstr.c_str(), "淀酱上班") == 0) {
+		return 99;
+	}
+	if (strcmp(tmpstr.c_str(), "淀酱下班") == 0) {
+		return 98;
+	}
 	if (strstr(tmpstr.c_str(),"[CQ:at,qq=2469931868]") != NULL) {
 		tmpstr = replace_all_distinct(tmpstr, "[CQ:at,qq=2469931868]", " ");
 		return charge(tmpstr.c_str(), sendmsg);
@@ -598,4 +610,18 @@ string&   replace_all_distinct(string&   str, const  string&  old_value, const  
 		else { break; }
 	}
 	return   str;
+}
+
+
+// 判断是否是管理员QQ
+bool isManagerQQ(int64_t fromQQ)
+{
+	int64_t managerQQ[3] = { MY_QQNUM , TEST_QQNUM, 839551855};
+	
+	for (int i = 0; i < sizeof(managerQQ)/sizeof(int64_t); i++) {
+		if (fromQQ == managerQQ[i]) {
+			return true;
+		}
+	}
+	return false;
 }

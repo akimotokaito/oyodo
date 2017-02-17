@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 * CoolQ Demo for VC++ 
 * Api Version 9
 * Written by Coxxs & Thanks for the help of orzFly
@@ -7,18 +7,19 @@
 #include "stdafx.h"
 #include "string"
 #include "cqp.h"
-#include "appmain.h" //Ó¦ÓÃAppIDµÈĞÅÏ¢£¬ÇëÕıÈ·ÌîĞ´£¬·ñÔò¿áQ¿ÉÄÜÎŞ·¨¼ÓÔØ
+#include "appmain.h" //åº”ç”¨AppIDç­‰ä¿¡æ¯ï¼Œè¯·æ­£ç¡®å¡«å†™ï¼Œå¦åˆ™é…·Qå¯èƒ½æ— æ³•åŠ è½½
 
 using namespace std;
 
 #include "myfunc.h"
 #include "mytimer.h"
-int ac = -1; //AuthCode µ÷ÓÃ¿áQµÄ·½·¨Ê±ĞèÒªÓÃµ½
+int ac = -1; //AuthCode è°ƒç”¨é…·Qçš„æ–¹æ³•æ—¶éœ€è¦ç”¨åˆ°
+int workingst = NOTWORK;
 bool enabled = false;
 DWORD WINAPI funproc(LPVOID lpparentet);
 
 /* 
-* ·µ»ØÓ¦ÓÃµÄApiVer¡¢Appid£¬´ò°üºó½«²»»áµ÷ÓÃ
+* è¿”å›åº”ç”¨çš„ApiVerã€Appidï¼Œæ‰“åŒ…åå°†ä¸ä¼šè°ƒç”¨
 */
 CQEVENT(const char*, AppInfo, 0)() {
 	return CQAPPINFO;
@@ -26,8 +27,8 @@ CQEVENT(const char*, AppInfo, 0)() {
 
 
 /* 
-* ½ÓÊÕÓ¦ÓÃAuthCode£¬¿áQ¶ÁÈ¡Ó¦ÓÃĞÅÏ¢ºó£¬Èç¹û½ÓÊÜ¸ÃÓ¦ÓÃ£¬½«»áµ÷ÓÃÕâ¸öº¯Êı²¢´«µİAuthCode¡£
-* ²»ÒªÔÚ±¾º¯Êı´¦ÀíÆäËûÈÎºÎ´úÂë£¬ÒÔÃâ·¢ÉúÒì³£Çé¿ö¡£ÈçĞèÖ´ĞĞ³õÊ¼»¯´úÂëÇëÔÚStartupÊÂ¼şÖĞÖ´ĞĞ£¨Type=1001£©¡£
+* æ¥æ”¶åº”ç”¨AuthCodeï¼Œé…·Qè¯»å–åº”ç”¨ä¿¡æ¯åï¼Œå¦‚æœæ¥å—è¯¥åº”ç”¨ï¼Œå°†ä¼šè°ƒç”¨è¿™ä¸ªå‡½æ•°å¹¶ä¼ é€’AuthCodeã€‚
+* ä¸è¦åœ¨æœ¬å‡½æ•°å¤„ç†å…¶ä»–ä»»ä½•ä»£ç ï¼Œä»¥å…å‘ç”Ÿå¼‚å¸¸æƒ…å†µã€‚å¦‚éœ€æ‰§è¡Œåˆå§‹åŒ–ä»£ç è¯·åœ¨Startupäº‹ä»¶ä¸­æ‰§è¡Œï¼ˆType=1001ï¼‰ã€‚
 */
 CQEVENT(int32_t, Initialize, 4)(int32_t AuthCode) {
 	ac = AuthCode;
@@ -36,20 +37,21 @@ CQEVENT(int32_t, Initialize, 4)(int32_t AuthCode) {
 
 
 /*
-* Type=1001 ¿áQÆô¶¯
-* ÎŞÂÛ±¾Ó¦ÓÃÊÇ·ñ±»ÆôÓÃ£¬±¾º¯Êı¶¼»áÔÚ¿áQÆô¶¯ºóÖ´ĞĞÒ»´Î£¬ÇëÔÚÕâÀïÖ´ĞĞÓ¦ÓÃ³õÊ¼»¯´úÂë¡£
-* Èç·Ç±ØÒª£¬²»½¨ÒéÔÚÕâÀï¼ÓÔØ´°¿Ú¡££¨¿ÉÒÔÌí¼Ó²Ëµ¥£¬ÈÃÓÃ»§ÊÖ¶¯´ò¿ª´°¿Ú£©
+* Type=1001 é…·Qå¯åŠ¨
+* æ— è®ºæœ¬åº”ç”¨æ˜¯å¦è¢«å¯ç”¨ï¼Œæœ¬å‡½æ•°éƒ½ä¼šåœ¨é…·Qå¯åŠ¨åæ‰§è¡Œä¸€æ¬¡ï¼Œè¯·åœ¨è¿™é‡Œæ‰§è¡Œåº”ç”¨åˆå§‹åŒ–ä»£ç ã€‚
+* å¦‚éå¿…è¦ï¼Œä¸å»ºè®®åœ¨è¿™é‡ŒåŠ è½½çª—å£ã€‚ï¼ˆå¯ä»¥æ·»åŠ èœå•ï¼Œè®©ç”¨æˆ·æ‰‹åŠ¨æ‰“å¼€çª—å£ï¼‰
 */
 CQEVENT(int32_t, __eventStartup, 0)() {
 	mytimer_start();
+	workingst = WORK;
 	return 0;
 }
 
 
 /*
-* Type=1002 ¿áQÍË³ö
-* ÎŞÂÛ±¾Ó¦ÓÃÊÇ·ñ±»ÆôÓÃ£¬±¾º¯Êı¶¼»áÔÚ¿áQÍË³öÇ°Ö´ĞĞÒ»´Î£¬ÇëÔÚÕâÀïÖ´ĞĞ²å¼ş¹Ø±Õ´úÂë¡£
-* ±¾º¯Êıµ÷ÓÃÍê±Ïºó£¬¿áQ½«ºÜ¿ì¹Ø±Õ£¬Çë²»ÒªÔÙÍ¨¹ıÏß³ÌµÈ·½Ê½Ö´ĞĞÆäËû´úÂë¡£
+* Type=1002 é…·Qé€€å‡º
+* æ— è®ºæœ¬åº”ç”¨æ˜¯å¦è¢«å¯ç”¨ï¼Œæœ¬å‡½æ•°éƒ½ä¼šåœ¨é…·Qé€€å‡ºå‰æ‰§è¡Œä¸€æ¬¡ï¼Œè¯·åœ¨è¿™é‡Œæ‰§è¡Œæ’ä»¶å…³é—­ä»£ç ã€‚
+* æœ¬å‡½æ•°è°ƒç”¨å®Œæ¯•åï¼Œé…·Qå°†å¾ˆå¿«å…³é—­ï¼Œè¯·ä¸è¦å†é€šè¿‡çº¿ç¨‹ç­‰æ–¹å¼æ‰§è¡Œå…¶ä»–ä»£ç ã€‚
 */
 CQEVENT(int32_t, __eventExit, 0)() {
 	mytimer_end();
@@ -57,10 +59,10 @@ CQEVENT(int32_t, __eventExit, 0)() {
 }
 
 /*
-* Type=1003 Ó¦ÓÃÒÑ±»ÆôÓÃ
-* µ±Ó¦ÓÃ±»ÆôÓÃºó£¬½«ÊÕµ½´ËÊÂ¼ş¡£
-* Èç¹û¿áQÔØÈëÊ±Ó¦ÓÃÒÑ±»ÆôÓÃ£¬ÔòÔÚ_eventStartup(Type=1001,¿áQÆô¶¯)±»µ÷ÓÃºó£¬±¾º¯ÊıÒ²½«±»µ÷ÓÃÒ»´Î¡£
-* Èç·Ç±ØÒª£¬²»½¨ÒéÔÚÕâÀï¼ÓÔØ´°¿Ú¡££¨¿ÉÒÔÌí¼Ó²Ëµ¥£¬ÈÃÓÃ»§ÊÖ¶¯´ò¿ª´°¿Ú£©
+* Type=1003 åº”ç”¨å·²è¢«å¯ç”¨
+* å½“åº”ç”¨è¢«å¯ç”¨åï¼Œå°†æ”¶åˆ°æ­¤äº‹ä»¶ã€‚
+* å¦‚æœé…·Qè½½å…¥æ—¶åº”ç”¨å·²è¢«å¯ç”¨ï¼Œåˆ™åœ¨_eventStartup(Type=1001,é…·Qå¯åŠ¨)è¢«è°ƒç”¨åï¼Œæœ¬å‡½æ•°ä¹Ÿå°†è¢«è°ƒç”¨ä¸€æ¬¡ã€‚
+* å¦‚éå¿…è¦ï¼Œä¸å»ºè®®åœ¨è¿™é‡ŒåŠ è½½çª—å£ã€‚ï¼ˆå¯ä»¥æ·»åŠ èœå•ï¼Œè®©ç”¨æˆ·æ‰‹åŠ¨æ‰“å¼€çª—å£ï¼‰
 */
 CQEVENT(int32_t, __eventEnable, 0)() {
 	enabled = true;
@@ -69,10 +71,10 @@ CQEVENT(int32_t, __eventEnable, 0)() {
 
 
 /*
-* Type=1004 Ó¦ÓÃ½«±»Í£ÓÃ
-* µ±Ó¦ÓÃ±»Í£ÓÃÇ°£¬½«ÊÕµ½´ËÊÂ¼ş¡£
-* Èç¹û¿áQÔØÈëÊ±Ó¦ÓÃÒÑ±»Í£ÓÃ£¬Ôò±¾º¯Êı*²»»á*±»µ÷ÓÃ¡£
-* ÎŞÂÛ±¾Ó¦ÓÃÊÇ·ñ±»ÆôÓÃ£¬¿áQ¹Ø±ÕÇ°±¾º¯Êı¶¼*²»»á*±»µ÷ÓÃ¡£
+* Type=1004 åº”ç”¨å°†è¢«åœç”¨
+* å½“åº”ç”¨è¢«åœç”¨å‰ï¼Œå°†æ”¶åˆ°æ­¤äº‹ä»¶ã€‚
+* å¦‚æœé…·Qè½½å…¥æ—¶åº”ç”¨å·²è¢«åœç”¨ï¼Œåˆ™æœ¬å‡½æ•°*ä¸ä¼š*è¢«è°ƒç”¨ã€‚
+* æ— è®ºæœ¬åº”ç”¨æ˜¯å¦è¢«å¯ç”¨ï¼Œé…·Qå…³é—­å‰æœ¬å‡½æ•°éƒ½*ä¸ä¼š*è¢«è°ƒç”¨ã€‚
 */
 CQEVENT(int32_t, __eventDisable, 0)() {
 	enabled = false;
@@ -81,23 +83,38 @@ CQEVENT(int32_t, __eventDisable, 0)() {
 
 
 /*
-* Type=21 Ë½ÁÄÏûÏ¢
-* subType ×ÓÀàĞÍ£¬11/À´×ÔºÃÓÑ 1/À´×ÔÔÚÏß×´Ì¬ 2/À´×ÔÈº 3/À´×ÔÌÖÂÛ×é
+* Type=21 ç§èŠæ¶ˆæ¯
+* subType å­ç±»å‹ï¼Œ11/æ¥è‡ªå¥½å‹ 1/æ¥è‡ªåœ¨çº¿çŠ¶æ€ 2/æ¥è‡ªç¾¤ 3/æ¥è‡ªè®¨è®ºç»„
 */
 CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t sendTime, int64_t fromQQ, const char *msg, int32_t font) {
 
-	//Èç¹ûÒª»Ø¸´ÏûÏ¢£¬Çëµ÷ÓÃ¿áQ·½·¨·¢ËÍ£¬²¢ÇÒÕâÀï return EVENT_BLOCK - ½Ø¶Ï±¾ÌõÏûÏ¢£¬²»ÔÙ¼ÌĞø´¦Àí  ×¢Òâ£ºÓ¦ÓÃÓÅÏÈ¼¶ÉèÖÃÎª"×î¸ß"(10000)Ê±£¬²»µÃÊ¹ÓÃ±¾·µ»ØÖµ
-	//Èç¹û²»»Ø¸´ÏûÏ¢£¬½»ÓÉÖ®ºóµÄÓ¦ÓÃ/¹ıÂËÆ÷´¦Àí£¬ÕâÀï return EVENT_IGNORE - ºöÂÔ±¾ÌõÏûÏ¢
+	//å¦‚æœè¦å›å¤æ¶ˆæ¯ï¼Œè¯·è°ƒç”¨é…·Qæ–¹æ³•å‘é€ï¼Œå¹¶ä¸”è¿™é‡Œ return EVENT_BLOCK - æˆªæ–­æœ¬æ¡æ¶ˆæ¯ï¼Œä¸å†ç»§ç»­å¤„ç†  æ³¨æ„ï¼šåº”ç”¨ä¼˜å…ˆçº§è®¾ç½®ä¸º"æœ€é«˜"(10000)æ—¶ï¼Œä¸å¾—ä½¿ç”¨æœ¬è¿”å›å€¼
+	//å¦‚æœä¸å›å¤æ¶ˆæ¯ï¼Œäº¤ç”±ä¹‹åçš„åº”ç”¨/è¿‡æ»¤å™¨å¤„ç†ï¼Œè¿™é‡Œ return EVENT_IGNORE - å¿½ç•¥æœ¬æ¡æ¶ˆæ¯
 	//ostringstream os;
 	int ret = 0;
 	string sendmsg("");
 	//vector<string> rcvmsg = split(msg, " ");
 
 	//os << fromQQ;
-	//sendmsg = "ÊÕµ½À´×Ô" + os.str() + "µÄÏûÏ¢£¬ÏûÏ¢ÄÚÈİÊÇ"+msg;
+	//sendmsg = "æ”¶åˆ°æ¥è‡ª" + os.str() + "çš„æ¶ˆæ¯ï¼Œæ¶ˆæ¯å†…å®¹æ˜¯"+msg;
 	ret = charge(msg, sendmsg);
-	if (ret == 0)
-	{
+	if (ret == 99 || ret == 98) {
+		if (isManagerQQ(fromQQ) && workingst != 99-ret) {
+			workingst = 99 - ret;
+			if (workingst == WORK){
+				CQ_sendPrivateMsg(ac, fromQQ, "ä¸Šç­ï¼");
+			}
+			else if (workingst == NOTWORK) {
+				CQ_sendPrivateMsg(ac, fromQQ, "ä¸‹ç­~");
+			}
+		}
+		return EVENT_IGNORE;
+	}
+	else if (workingst == NOTWORK) {
+		return EVENT_IGNORE;
+	}
+
+	if (ret == 0){
 		return EVENT_IGNORE;
 	}
 	if (ret == 10 && fromQQ == MY_QQNUM){
@@ -115,14 +132,14 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t sendTime, int64
 	} 
 	else
 	{
-		return EVENT_IGNORE; //¹ØÓÚ·µ»ØÖµËµÃ÷, ¼û¡°_eventPrivateMsg¡±º¯Êı
+		return EVENT_IGNORE; //å…³äºè¿”å›å€¼è¯´æ˜, è§â€œ_eventPrivateMsgâ€å‡½æ•°
 	}
 	
 }
 
 
 /*
-* Type=2 ÈºÏûÏ¢
+* Type=2 ç¾¤æ¶ˆæ¯
 */
 CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t fromGroup, int64_t fromQQ, const char *fromAnonymous, const char *msg, int32_t font) {
 
@@ -132,17 +149,44 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t
 	//vector<string> rcvmsg = split(msg, " ");
 
 	//os << fromQQ;
-	//sendmsg = "ÊÕµ½À´×Ô" + os.str() + "µÄÏûÏ¢£¬ÏûÏ¢ÄÚÈİÊÇ"+msg;
+	//sendmsg = "æ”¶åˆ°æ¥è‡ª" + os.str() + "çš„æ¶ˆæ¯ï¼Œæ¶ˆæ¯å†…å®¹æ˜¯"+msg;
 	ret = charge(msg, sendmsg);
-	
+	ret = charge(msg, sendmsg);
+	if (ret == 99 || ret == 98) {
+		if (isManagerQQ(fromQQ)) {
+			if (workingst != 99 - ret) {
+				workingst = 99 - ret;
+				if (workingst == WORK) {
+					CQ_sendGroupMsg(ac, fromGroup, "æ·€é…±ï¼Œå¼€å§‹ä¸Šç­äº†ï¼");
+				}
+				else if (workingst == NOTWORK) {
+					CQ_sendGroupMsg(ac, fromGroup, "ç»ˆäºä¸‹ç­å•¦~");
+				}
+			} else {
+				if (workingst == WORK) {
+					CQ_sendGroupMsg(ac, fromGroup, "æ·€é…±å·²ç»åœ¨åŠªåŠ›å·¥ä½œäº†ï¼");
+				}
+				else if (workingst == NOTWORK) {
+					CQ_sendGroupMsg(ac, fromGroup, "æ·€é…±å·²ç»æ˜¯ä¸‹ç­çŠ¶æ€äº†å“¦ã€‚");
+				}
+			}
+		
+		} else {
+			CQ_sendGroupMsg(ac, fromGroup, "çˆ¶äº²ä¸è®©æ·€é…±å¬é™Œç”Ÿäººçš„è¯ã€‚");
+		}
+		return EVENT_IGNORE;
+	}
+	else if (workingst == NOTWORK) {
+		return EVENT_IGNORE;
+	}
 	//CQ_sendPrivateMsg(ac, 526975248, msg);
 	if (ret == 0)
 	{
 		return EVENT_IGNORE;
-	}else if (ret/10 == 2) //Ô¶Õ÷µÄ·´À¡
+	}else if (ret/10 == 2) //è¿œå¾çš„åé¦ˆ
 	{
 		switch(ret%10){
-		case 0: //Ê§°Ü
+		case 0: //å¤±è´¥
 			return EVENT_IGNORE;
 			break;
 		case 1:
@@ -164,88 +208,88 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t
 	} 
 	else
 	{
-		return EVENT_IGNORE; //¹ØÓÚ·µ»ØÖµËµÃ÷, ¼û¡°_eventPrivateMsg¡±º¯Êı
+		return EVENT_IGNORE; //å…³äºè¿”å›å€¼è¯´æ˜, è§â€œ_eventPrivateMsgâ€å‡½æ•°
 	}	
 	
 }
 
 
 /*
-* Type=4 ÌÖÂÛ×éÏûÏ¢
+* Type=4 è®¨è®ºç»„æ¶ˆæ¯
 */
 CQEVENT(int32_t, __eventDiscussMsg, 32)(int32_t subType, int32_t sendTime, int64_t fromDiscuss, int64_t fromQQ, const char *msg, int32_t font) {
 
-	return EVENT_IGNORE; //¹ØÓÚ·µ»ØÖµËµÃ÷, ¼û¡°_eventPrivateMsg¡±º¯Êı
+	return EVENT_IGNORE; //å…³äºè¿”å›å€¼è¯´æ˜, è§â€œ_eventPrivateMsgâ€å‡½æ•°
 }
 
 
 /*
-* Type=101 ÈºÊÂ¼ş-¹ÜÀíÔ±±ä¶¯
-* subType ×ÓÀàĞÍ£¬1/±»È¡Ïû¹ÜÀíÔ± 2/±»ÉèÖÃ¹ÜÀíÔ±
+* Type=101 ç¾¤äº‹ä»¶-ç®¡ç†å‘˜å˜åŠ¨
+* subType å­ç±»å‹ï¼Œ1/è¢«å–æ¶ˆç®¡ç†å‘˜ 2/è¢«è®¾ç½®ç®¡ç†å‘˜
 */
 CQEVENT(int32_t, __eventSystem_GroupAdmin, 24)(int32_t subType, int32_t sendTime, int64_t fromGroup, int64_t beingOperateQQ) {
 
-	return EVENT_IGNORE; //¹ØÓÚ·µ»ØÖµËµÃ÷, ¼û¡°_eventPrivateMsg¡±º¯Êı
+	return EVENT_IGNORE; //å…³äºè¿”å›å€¼è¯´æ˜, è§â€œ_eventPrivateMsgâ€å‡½æ•°
 }
 
 
 /*
-* Type=102 ÈºÊÂ¼ş-Èº³ÉÔ±¼õÉÙ
-* subType ×ÓÀàĞÍ£¬1/ÈºÔ±Àë¿ª 2/ÈºÔ±±»Ìß 3/×Ô¼º(¼´µÇÂ¼ºÅ)±»Ìß
-* fromQQ ²Ù×÷ÕßQQ(½ösubTypeÎª2¡¢3Ê±´æÔÚ)
-* beingOperateQQ ±»²Ù×÷QQ
+* Type=102 ç¾¤äº‹ä»¶-ç¾¤æˆå‘˜å‡å°‘
+* subType å­ç±»å‹ï¼Œ1/ç¾¤å‘˜ç¦»å¼€ 2/ç¾¤å‘˜è¢«è¸¢ 3/è‡ªå·±(å³ç™»å½•å·)è¢«è¸¢
+* fromQQ æ“ä½œè€…QQ(ä»…subTypeä¸º2ã€3æ—¶å­˜åœ¨)
+* beingOperateQQ è¢«æ“ä½œQQ
 */
 CQEVENT(int32_t, __eventSystem_GroupMemberDecrease, 32)(int32_t subType, int32_t sendTime, int64_t fromGroup, int64_t fromQQ, int64_t beingOperateQQ) {
 
-	return EVENT_IGNORE; //¹ØÓÚ·µ»ØÖµËµÃ÷, ¼û¡°_eventPrivateMsg¡±º¯Êı
+	return EVENT_IGNORE; //å…³äºè¿”å›å€¼è¯´æ˜, è§â€œ_eventPrivateMsgâ€å‡½æ•°
 }
 
 
 /*
-* Type=103 ÈºÊÂ¼ş-Èº³ÉÔ±Ôö¼Ó
-* subType ×ÓÀàĞÍ£¬1/¹ÜÀíÔ±ÒÑÍ¬Òâ 2/¹ÜÀíÔ±ÑûÇë
-* fromQQ ²Ù×÷ÕßQQ(¼´¹ÜÀíÔ±QQ)
-* beingOperateQQ ±»²Ù×÷QQ(¼´¼ÓÈºµÄQQ)
+* Type=103 ç¾¤äº‹ä»¶-ç¾¤æˆå‘˜å¢åŠ 
+* subType å­ç±»å‹ï¼Œ1/ç®¡ç†å‘˜å·²åŒæ„ 2/ç®¡ç†å‘˜é‚€è¯·
+* fromQQ æ“ä½œè€…QQ(å³ç®¡ç†å‘˜QQ)
+* beingOperateQQ è¢«æ“ä½œQQ(å³åŠ ç¾¤çš„QQ)
 */
 CQEVENT(int32_t, __eventSystem_GroupMemberIncrease, 32)(int32_t subType, int32_t sendTime, int64_t fromGroup, int64_t fromQQ, int64_t beingOperateQQ) {
 
-	return EVENT_IGNORE; //¹ØÓÚ·µ»ØÖµËµÃ÷, ¼û¡°_eventPrivateMsg¡±º¯Êı
+	return EVENT_IGNORE; //å…³äºè¿”å›å€¼è¯´æ˜, è§â€œ_eventPrivateMsgâ€å‡½æ•°
 }
 
 
 /*
-* Type=201 ºÃÓÑÊÂ¼ş-ºÃÓÑÒÑÌí¼Ó
+* Type=201 å¥½å‹äº‹ä»¶-å¥½å‹å·²æ·»åŠ 
 */
 CQEVENT(int32_t, __eventFriend_Add, 16)(int32_t subType, int32_t sendTime, int64_t fromQQ) {
 
-	return EVENT_IGNORE; //¹ØÓÚ·µ»ØÖµËµÃ÷, ¼û¡°_eventPrivateMsg¡±º¯Êı
+	return EVENT_IGNORE; //å…³äºè¿”å›å€¼è¯´æ˜, è§â€œ_eventPrivateMsgâ€å‡½æ•°
 }
 
 
 /*
-* Type=301 ÇëÇó-ºÃÓÑÌí¼Ó
-* msg ¸½ÑÔ
-* responseFlag ·´À¡±êÊ¶(´¦ÀíÇëÇóÓÃ)
+* Type=301 è¯·æ±‚-å¥½å‹æ·»åŠ 
+* msg é™„è¨€
+* responseFlag åé¦ˆæ ‡è¯†(å¤„ç†è¯·æ±‚ç”¨)
 */
 CQEVENT(int32_t, __eventRequest_AddFriend, 24)(int32_t subType, int32_t sendTime, int64_t fromQQ, const char *msg, const char *responseFlag) {
 
 	//CQ_setFriendAddRequest(ac, responseFlag, REQUEST_ALLOW, "");
 	if(strlen(msg) >= strlen("loveakashi")){
 		if(strstr(msg,"loveakashi") != NULL){
-			CQ_setFriendAddRequest(ac, responseFlag, REQUEST_ALLOW, "ÃÜÂëÕıÈ·");
+			CQ_setFriendAddRequest(ac, responseFlag, REQUEST_ALLOW, "å¯†ç æ­£ç¡®");
 		}else{
-			CQ_setFriendAddRequest(ac, responseFlag, REQUEST_DENY, "ÃÜÂë´íÎó");
+			CQ_setFriendAddRequest(ac, responseFlag, REQUEST_DENY, "å¯†ç é”™è¯¯");
 		}
 	}
-	return EVENT_BLOCK; //¹ØÓÚ·µ»ØÖµËµÃ÷, ¼û¡°_eventPrivateMsg¡±º¯Êı
+	return EVENT_BLOCK; //å…³äºè¿”å›å€¼è¯´æ˜, è§â€œ_eventPrivateMsgâ€å‡½æ•°
 }
 
 
 /*
-* Type=302 ÇëÇó-ÈºÌí¼Ó
-* subType ×ÓÀàĞÍ£¬1/ËûÈËÉêÇëÈëÈº 2/×Ô¼º(¼´µÇÂ¼ºÅ)ÊÜÑûÈëÈº
-* msg ¸½ÑÔ
-* responseFlag ·´À¡±êÊ¶(´¦ÀíÇëÇóÓÃ)
+* Type=302 è¯·æ±‚-ç¾¤æ·»åŠ 
+* subType å­ç±»å‹ï¼Œ1/ä»–äººç”³è¯·å…¥ç¾¤ 2/è‡ªå·±(å³ç™»å½•å·)å—é‚€å…¥ç¾¤
+* msg é™„è¨€
+* responseFlag åé¦ˆæ ‡è¯†(å¤„ç†è¯·æ±‚ç”¨)
 */
 CQEVENT(int32_t, __eventRequest_AddGroup, 32)(int32_t subType, int32_t sendTime, int64_t fromGroup, int64_t fromQQ, const char *msg, const char *responseFlag) {
 
@@ -261,7 +305,7 @@ CQEVENT(int32_t, __eventRequest_AddGroup, 32)(int32_t subType, int32_t sendTime,
 			CQ_setGroupAddRequestV2(ac, responseFlag, REQUEST_GROUPINVITE, REQUEST_ALLOW, "");
 		}
 	}
-	return EVENT_IGNORE; //¹ØÓÚ·µ»ØÖµËµÃ÷, ¼û¡°_eventPrivateMsg¡±º¯Êı
+	return EVENT_IGNORE; //å…³äºè¿”å›å€¼è¯´æ˜, è§â€œ_eventPrivateMsgâ€å‡½æ•°
 }
 
 void mytimer_start()
@@ -271,7 +315,7 @@ void mytimer_start()
 
 void mytimer_end()
 {
-	CloseHandle(funproc);//HANDLE hObject ¶ÔÏó¾ä±ú
+	CloseHandle(funproc);//HANDLE hObject å¯¹è±¡å¥æŸ„
 }
 
 
@@ -283,8 +327,8 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 	char timez[100] = {0};
 	string now_time;
 	//BOOL isFirst = true;
-	BOOL nFlag = true; //¼ÇÂ¼ÊÇ·ñ±¨¹ıµ±Ç°Ê±,trueÎªÃ»±¨¹ıÊ±£¬falseÎª±¨¹ı
-	BOOL newFirst = true; //ĞÂÄêµÚÒ»´Î±¨Ê±flag
+	BOOL nFlag = true; //è®°å½•æ˜¯å¦æŠ¥è¿‡å½“å‰æ—¶,trueä¸ºæ²¡æŠ¥è¿‡æ—¶ï¼Œfalseä¸ºæŠ¥è¿‡
+	BOOL newFirst = true; //æ–°å¹´ç¬¬ä¸€æ¬¡æŠ¥æ—¶flag
 	int lasthour = -1;
 	SYSTEMTIME sys;
 	//struct tm *aa;
@@ -292,16 +336,16 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 	//time(&tt);
 	//aa = localtime(&tt);
 
-	//»ñÈ¡ÏµÍ³Ê±¼ä£¬Ã¿´Î¿ªÆô³ÌĞòÖ´ĞĞÒ»´Î
+	//è·å–ç³»ç»Ÿæ—¶é—´ï¼Œæ¯æ¬¡å¼€å¯ç¨‹åºæ‰§è¡Œä¸€æ¬¡
 	/*GetLocalTime(&sys);
 	string firstlogin;
-	firstlogin += "ÏÖÔÚÊÇ";
+	firstlogin += "ç°åœ¨æ˜¯";
 	firstlogin += to_string(sys.wHour);// aa->tm_hour;
-	firstlogin += "Ê±";
+	firstlogin += "æ—¶";
 	firstlogin += to_string(sys.wMinute);// aa->tm_min;
-	firstlogin += "·Ö";
+	firstlogin += "åˆ†";
 	firstlogin += to_string(sys.wSecond);// aa->tm_sec;
-	firstlogin += "Ãë£¬Ìá¶½ÄúºÃ£¡µí½´ÉÏ°àÀ²~";
+	firstlogin += "ç§’ï¼Œæç£æ‚¨å¥½ï¼æ·€é…±ä¸Šç­å•¦~";
 	CQ_sendGroupMsg(ac, MY_GRPNUM, firstlogin.c_str());
 	//CQ_sendGroupMsg(ac, KANC_GRPNUM, firstlogin.c_str());
 	//CQ_sendGroupMsg(ac, TEST_GRPNUM, firstlogin.c_str());*/
@@ -312,23 +356,23 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 
 		//memset(timez, 0, sizeof(timez));
 		GetLocalTime(&sys);
-		//sprintf(timez, "%4d/%02d/%02d %02d:%02d:%02d.%03d ĞÇÆÚ%1d\n", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds, sys.wDayOfWeek);
+		//sprintf(timez, "%4d/%02d/%02d %02d:%02d:%02d.%03d æ˜ŸæœŸ%1d\n", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds, sys.wDayOfWeek);
 		//now_time = timez;
 
-		if (newFirst && sys.wDay == 28 && sys.wMonth == 1 && sys.wYear == 2017){ //28ºÅºó±¨Ê±Ò»´Î
+		/*if (newFirst && sys.wDay == 28 && sys.wMonth == 1 && sys.wYear == 2017){ //28å·åæŠ¥æ—¶ä¸€æ¬¡
 			string sendmsg;
 			string sendmsgmygrp;
 			string sendmsgkcgrp;
 			newFirst = false;
-			sendmsg += "ÒÑÊÇĞÂµÄÒ»ÄêÁË£¬ĞÂÄê¿ìÀÖ~£¡\n½ñÄêÒ²Çë¸÷Î»¶à¶à¹ØÕÕ¡£\nÕâÀïÊÇ´óµíÎÒÒ»µãĞ¡Ğ¡ĞÄÒâ£¬\n¸ĞĞ»¸÷Î»³¤Ê±¼äÒÔÀ´µÄÖ§³Ö£¡\n";
+			sendmsg += "å·²æ˜¯æ–°çš„ä¸€å¹´äº†ï¼Œæ–°å¹´å¿«ä¹~ï¼\nä»Šå¹´ä¹Ÿè¯·å„ä½å¤šå¤šå…³ç…§ã€‚\nè¿™é‡Œæ˜¯å¤§æ·€æˆ‘ä¸€ç‚¹å°å°å¿ƒæ„ï¼Œ\næ„Ÿè°¢å„ä½é•¿æ—¶é—´ä»¥æ¥çš„æ”¯æŒï¼\n";
 			sendmsgmygrp += sendmsg;
-			sendmsgmygrp += "ÇëÄú´ò¿ªÖ§¸¶±¦-¿ÚÁîºì°ü£¬\nÊäÈë£º¡°µí½´×£ÄúĞÂÄê¿ìÀÖÓ´¡±\nÁìÈ¡ÓÉ@Æ»¹û ÔŞÖúµÄºì°ü~";
+			sendmsgmygrp += "è¯·æ‚¨æ‰“å¼€æ”¯ä»˜å®-å£ä»¤çº¢åŒ…ï¼Œ\nè¾“å…¥ï¼šâ€œæ·€é…±ç¥æ‚¨æ–°å¹´å¿«ä¹å“Ÿâ€\né¢†å–ç”±@è‹¹æœ èµåŠ©çš„çº¢åŒ…~";
 			CQ_sendGroupMsg(ac, MY_GRPNUM, sendmsgmygrp.c_str());
 			sendmsgkcgrp += sendmsg;
-			sendmsgkcgrp += "ÇëÄú´ò¿ªÖ§¸¶±¦-¿ÚÁîºì°ü£¬\nÊäÈë£º¡°µí½´×£¸÷Î»Ìá¶½ĞÂÄê¿ìÀÖ¡±\nÁìÈ¡ÓÉµí½´µÄ¸¸Ç×@Ğ¡Çï ÔŞÖúµÄºì°ü~";
+			sendmsgkcgrp += "è¯·æ‚¨æ‰“å¼€æ”¯ä»˜å®-å£ä»¤çº¢åŒ…ï¼Œ\nè¾“å…¥ï¼šâ€œæ·€é…±ç¥å„ä½æç£æ–°å¹´å¿«ä¹â€\né¢†å–ç”±æ·€é…±çš„çˆ¶äº²@å°ç§‹ èµåŠ©çš„çº¢åŒ…~";
 			CQ_sendGroupMsg(ac, KANC_GRPNUM, sendmsgkcgrp.c_str());
-		}else if (sys.wMinute == 0) {
-			if (nFlag) { //Èç¹ûÃ»±¨¹ıÊ± ¾Í±¨Ò»´ÎÊ±£¬ÇÒ¼ÇÂ¼ÏÂ×îºóÒ»´Î±¨Ê±µÄĞ¡Ê±Êı
+		}else */if (sys.wMinute == 0) {
+			if (nFlag) { //å¦‚æœæ²¡æŠ¥è¿‡æ—¶ å°±æŠ¥ä¸€æ¬¡æ—¶ï¼Œä¸”è®°å½•ä¸‹æœ€åä¸€æ¬¡æŠ¥æ—¶çš„å°æ—¶æ•°
 				string sendmsg;
 				ifstream File;
 				char * FileName = "app\\com.steve.oyodo\\baoshi\\oyodo.txt";
@@ -338,10 +382,10 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 				if (!File){
 					cerr << "error oprening file myname!" << endl;
 					//exit(-1);
-					return 0;//¶ÁÎÄ¼şÊ§°Ü·´·µ»Ø0
+					return 0;//è¯»æ–‡ä»¶å¤±è´¥åè¿”å›0
 				}
 				else{
-					for (size_t i = 0; !File.eof(); i++)  //Õâ¸öÑ­»·ÕÒµ½Ğ¡Ê±¶ÔÓ¦µÄ2ĞĞ±¨Ê±ÓïÒô
+					for (size_t i = 0; !File.eof(); i++)  //è¿™ä¸ªå¾ªç¯æ‰¾åˆ°å°æ—¶å¯¹åº”çš„2è¡ŒæŠ¥æ—¶è¯­éŸ³
 					{
 						File.getline(databuf, 256);
 						if (i == 3 * sys.wHour){
@@ -361,21 +405,23 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 					}
 					File.close();
 				}
-				/*sendmsg += "ÏÖÔÚÊÇ";
+				/*sendmsg += "ç°åœ¨æ˜¯";
 				sendmsg += to_string(sys.wHour);// aa->tm_hour;
-				sendmsg += "Ê±";
+				sendmsg += "æ—¶";
 				sendmsg += to_string(sys.wMinute);// aa->tm_min;
-				sendmsg += "·Ö";
+				sendmsg += "åˆ†";
 				sendmsg += to_string(sys.wSecond);// aa->tm_sec;
-				sendmsg += "Ãë";*/
-				CQ_sendGroupMsg(ac, MY_GRPNUM, sendmsg.c_str());
+				sendmsg += "ç§’";*/
+				if(workingst == WORK){
+					CQ_sendGroupMsg(ac, MY_GRPNUM, sendmsg.c_str());
+				}
 				//CQ_sendGroupMsg(ac, TEST_GRPNUM, sendmsg.c_str());
 				//CQ_sendGroupMsg(ac, KANC_GRPNUM, sendmsg.c_str());
 				//CQ_sendPrivateMsg(ac, MY_QQNUM, sendmsg.c_str());
 				nFlag = false;
 				lasthour = sys.wHour;
 			}
-			else//Èç¹û±¨¹ıÁË£¬¾Í
+			else//å¦‚æœæŠ¥è¿‡äº†ï¼Œå°±
 			{
 				if (lasthour != sys.wHour)
 				{
@@ -390,35 +436,3 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 
 	return 0;
 }
-
-
-/*
-// °ÑÎÄ¼şÄÚÈİ¶ÁÈ¡µ½sendmsgÀï
-int readfiletomsg(char * FileName, string & sendmsg)
-{
-ifstream File;
-//char * FileName = "F:\\software\\kuq\\¿áQ Air\\app\\com.steve.oyodo\\yuanzheng\\help.txt";
-char databuf[256];
-
-File.open(FileName);
-if(!File){
-cerr<<"error oprening file myname!"<<endl;
-//exit(-1);
-return 0;//¶ÁÎÄ¼şÊ§°Ü·´·µ»Ø0
-}else{
-while(!File.eof()){
-//File.read(databuf,128);
-File.getline(databuf,256);
-sendmsg += databuf;
-sendmsg += "\n";
-}
-if (sendmsg.empty() == false)
-{
-sendmsg.erase(sendmsg.size()-1);
-}
-File.close();
-return 1;//¶ÁÎÄ¼ş³É¹¦·µ»Ø1
-}
-
-}
-*/
