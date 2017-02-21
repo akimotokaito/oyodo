@@ -40,11 +40,15 @@ int charge(const char *rcvmsg, string & sendmsg)
 	{
 		tmpstr.erase(0, 1);
 	}
+	while (!tmpstr.empty() && tmpstr[tmpstr.size()-1] == ' ')
+	{
+		tmpstr.erase(tmpstr.size()-1, 1);
+	}
 
-	if (strcmp(tmpstr.c_str(), "µÌΩ¥…œ∞‡") == 0) {
+	if (strstr(tmpstr.c_str(), "µÌΩ¥…œ∞‡") != NULL  && tmpstr.size() <= 12) {
 		return 99;
 	}
-	if (strcmp(tmpstr.c_str(), "µÌΩ¥œ¬∞‡") == 0) {
+	if (strstr(tmpstr.c_str(), "µÌΩ¥œ¬∞‡") != NULL  && tmpstr.size() <= 12) {
 		return 98;
 	}
 	if (strstr(tmpstr.c_str(),"[CQ:at,qq=2469931868]") != NULL) {
