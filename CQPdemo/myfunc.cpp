@@ -620,7 +620,7 @@ string&   replace_all_distinct(string&   str, const  string&  old_value, const  
 // 判断是否是管理员QQ
 bool isManagerQQ(int64_t fromQQ)
 {
-	int64_t managerQQ[3] = { MY_QQNUM , TEST_QQNUM, 839551855};
+	int64_t managerQQ[] = { MY_QQNUM , TEST_QQNUM, 839551855};
 	
 	for (int i = 0; i < sizeof(managerQQ)/sizeof(int64_t); i++) {
 		if (fromQQ == managerQQ[i]) {

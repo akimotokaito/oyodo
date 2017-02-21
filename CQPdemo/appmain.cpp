@@ -151,7 +151,7 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t
 	//os << fromQQ;
 	//sendmsg = "收到来自" + os.str() + "的消息，消息内容是"+msg;
 	ret = charge(msg, sendmsg);
-	ret = charge(msg, sendmsg);
+	
 	if (ret == 99 || ret == 98) {
 		if (isManagerQQ(fromQQ)) {
 			if (workingst != 99 - ret) {
