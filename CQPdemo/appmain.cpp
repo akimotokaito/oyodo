@@ -43,7 +43,7 @@ CQEVENT(int32_t, Initialize, 4)(int32_t AuthCode) {
 */
 CQEVENT(int32_t, __eventStartup, 0)() {
 	mytimer_start();
-	workingst = WORK;
+	//workingst = WORK;
 	return 0;
 }
 
@@ -350,6 +350,15 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 	//CQ_sendGroupMsg(ac, KANC_GRPNUM, firstlogin.c_str());
 	//CQ_sendGroupMsg(ac, TEST_GRPNUM, firstlogin.c_str());*/
 
+
+	// 根据当前时间确认是否为上班
+	// 如果开启的时间为8点到23点之间，则状态为上班
+	GetLocalTime(&sys);
+	if (sys.wHour >= 8 && sys.wHour <= 22) {
+		workingst = WORK;
+	}else{
+		workingst = NOTWORK;
+	}
 
 
 	while (TRUE) {
