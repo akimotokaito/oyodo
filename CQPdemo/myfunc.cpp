@@ -55,7 +55,12 @@ int charge(const char *rcvmsg, string & sendmsg)
 		tmpstr = replace_all_distinct(tmpstr, "[CQ:at,qq=2469931868]", " ");
 		return charge(tmpstr.c_str(), sendmsg);
 	}
-	if (strstr(tmpstr.c_str(),"远征") != NULL)
+	if (strstr(tmpstr.c_str(), "发群") != NULL)
+	{
+		//sendgroupmsg(rcvmsg, sendmsg);
+		ret = 10; //主控QQ控制机器人发消息到指定群
+	}
+	else if (strstr(tmpstr.c_str(),"远征") != NULL)
 	{
 		//sql_search(rcvmsg, sendmsg);
 		if (tmpstr.size() > 100) {
@@ -78,11 +83,7 @@ int charge(const char *rcvmsg, string & sendmsg)
 		}else{
 			ret = gonglue(tmpstr.c_str(), sendmsg);; //攻略
 		}
-	}else if (strstr(tmpstr.c_str(),"发群") != NULL)
-	{
-		//sendgroupmsg(rcvmsg, sendmsg);
-		ret = 10; //主控QQ控制机器人发消息到指定群
-	}else
+	}else 
 	{
 		return ret;
 	}
