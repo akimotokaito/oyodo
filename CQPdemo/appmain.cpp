@@ -15,6 +15,7 @@ using namespace std;
 #include "mytimer.h"
 int ac = -1; //AuthCode 调用酷Q的方法时需要用到
 int workingst = NOTWORK;
+int baoshist = WORK;
 bool enabled = false;
 DWORD WINAPI funproc(LPVOID lpparentet);
 
@@ -152,6 +153,7 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t
 	//sendmsg = "收到来自" + os.str() + "的消息，消息内容是"+msg;
 	ret = charge(msg, sendmsg);
 	
+	// 管理员帐号控制上下班
 	if (ret == 99 || ret == 98) {
 		if (isManagerQQ(fromQQ)) {
 			if (workingst != 99 - ret) {
@@ -179,6 +181,37 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t
 	else if (workingst == NOTWORK) {
 		return EVENT_IGNORE;
 	}
+
+	// 管理员帐号控制是否报时
+	if (ret == 97 || ret == 96) {
+		if (isManagerQQ(fromQQ)) {		
+			if (baoshist != 97 - ret) {
+				baoshist = 97 - ret;
+				if (baoshist == WORK) {
+					CQ_sendGroupMsg(ac, fromGroup, "那么就让开始为您报时吧！");
+				}
+				else if (baoshist == NOTWORK) {
+					CQ_sendGroupMsg(ac, fromGroup, "淀酱不再报时了哦，提督请自己注意时间~");
+				}
+			}
+			else {
+				if (baoshist == WORK) {
+					CQ_sendGroupMsg(ac, fromGroup, "交给淀酱了，会记得提醒您时间的。");
+				}
+				else if (baoshist == NOTWORK) {
+					CQ_sendGroupMsg(ac, fromGroup, "好的，提督，淀酱就不罗嗦啦。");
+				}
+			}
+		}
+		else {
+			CQ_sendGroupMsg(ac, fromGroup, "父亲不让淀酱听陌生人的话呢。");
+		}
+		return EVENT_IGNORE;
+	}
+	else if (workingst == NOTWORK) {
+		return EVENT_IGNORE;
+	}
+
 	//CQ_sendPrivateMsg(ac, 526975248, msg);
 	if (ret == 0)
 	{
@@ -421,7 +454,7 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 				sendmsg += "分";
 				sendmsg += to_string(sys.wSecond);// aa->tm_sec;
 				sendmsg += "秒";*/
-				if(workingst == WORK){
+				if(workingst == WORK && baoshist == WORK){
 					CQ_sendGroupMsg(ac, MY_GRPNUM, sendmsg.c_str());
 				}
 				//CQ_sendGroupMsg(ac, TEST_GRPNUM, sendmsg.c_str());

@@ -46,14 +46,25 @@ int charge(const char *rcvmsg, string & sendmsg)
 	}
 
 	if (strstr(tmpstr.c_str(), "淀酱上班") != NULL  && tmpstr.size() <= 12) {
-		return 99;
+		return 99; //上班返回值
 	}
 	if (strstr(tmpstr.c_str(), "淀酱下班") != NULL  && tmpstr.size() <= 12) {
-		return 98;
+		return 98; //下班返回值
 	}
 	if (strstr(tmpstr.c_str(),"[CQ:at,qq=2469931868]") != NULL) {
 		tmpstr = replace_all_distinct(tmpstr, "[CQ:at,qq=2469931868]", " ");
 		return charge(tmpstr.c_str(), sendmsg);
+	}
+	if (strstr(tmpstr.c_str(), "报时") != NULL  && tmpstr.size() <= 32) {
+		if(strstr(tmpstr.c_str(), "开始报时") != NULL ||
+			strstr(tmpstr.c_str(), "继续报时") != NULL ||
+			strstr(tmpstr.c_str(), "淀酱报时") != NULL)
+			return 97; //报时
+		if (strstr(tmpstr.c_str(), "停止报时") != NULL ||
+			strstr(tmpstr.c_str(), "不要报时") != NULL ||
+			strstr(tmpstr.c_str(), "别报时") != NULL ||
+			strstr(tmpstr.c_str(), "终止报时") != NULL)
+			return 96; //停止报时
 	}
 	if (strstr(tmpstr.c_str(), "发群") != NULL)
 	{
