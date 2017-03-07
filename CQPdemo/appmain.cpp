@@ -116,6 +116,9 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t sendTime, int64
 	}
 
 	if (ret == 0){
+		/*char sendmsg2[1024];
+		strcpy(sendmsg2, CQ_getGroupMemberInfoV2(ac, TEST_GRPNUM, 1784667245, 0));
+		CQ_sendPrivateMsg(ac, fromQQ, sendmsg2);*/
 		return EVENT_IGNORE;
 	}
 	if (ret == 10 && fromQQ == MY_QQNUM){
@@ -188,7 +191,7 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t
 			if (baoshist != 97 - ret) {
 				baoshist = 97 - ret;
 				if (baoshist == WORK) {
-					CQ_sendGroupMsg(ac, fromGroup, "那么就让开始为您报时吧！");
+					CQ_sendGroupMsg(ac, fromGroup, "那么就让淀酱为您报时吧！");
 				}
 				else if (baoshist == NOTWORK) {
 					CQ_sendGroupMsg(ac, fromGroup, "淀酱不再报时了哦，提督请自己注意时间~");
@@ -273,6 +276,57 @@ CQEVENT(int32_t, __eventSystem_GroupAdmin, 24)(int32_t subType, int32_t sendTime
 * beingOperateQQ 被操作QQ
 */
 CQEVENT(int32_t, __eventSystem_GroupMemberDecrease, 32)(int32_t subType, int32_t sendTime, int64_t fromGroup, int64_t fromQQ, int64_t beingOperateQQ) {
+
+	string sendmsg;
+	
+
+	string sSubType = itos(subType);
+	string sSendTime = itos(sendTime);
+	string sFromGroup = lltos(fromGroup);
+	string sFromQQ = lltos(fromQQ);
+	string sBeingOpQQ = lltos(beingOperateQQ);
+
+	/*
+	string sdmsg;
+	sdmsg += sSubType;
+	sdmsg += ", ";
+	sdmsg += sSendTime;
+	sdmsg += ", ";
+	sdmsg += sFromGroup;
+	sdmsg += ", ";
+	sdmsg += sFromQQ;
+	sdmsg += ", ";
+	sdmsg += sBeingOpQQ;
+	sdmsg += ", ";
+
+	CQ_sendGroupMsg(ac, fromGroup, sdmsg.c_str());*/
+
+
+
+	if (subType == 1) { //主动退群
+		sendmsg += "淀酱要告诉大家一个很不幸的消息，\n就在不久的刚才，编号为：[";
+		sendmsg += sBeingOpQQ;
+		sendmsg += "]的提督主动辞职，\n离开了我们镇守府…";
+		CQ_sendGroupMsg(ac, fromGroup, sendmsg.c_str());
+		
+	}
+	else if (subType == 2) { //被T
+		/*sendmsg += "于时间";
+		sendmsg += sSendTime;
+		sendmsg += "，";
+		sendmsg += sBeingOpQQ;
+		sendmsg += "被";
+		sendmsg += sFromQQ;
+		sendmsg += "辞退，离开了";
+		CQ_sendGroupMsg(ac, fromGroup, sendmsg.c_str());*/
+		sendmsg += "淀酱要告诉大家一个很不幸的消息，\n就在不久的刚才，编号为：[";
+		sendmsg += sBeingOpQQ;
+		sendmsg += "]的提督因[不可名状的理由]，\n被其上司，编号为：[";
+		sendmsg += sFromQQ; 
+		sendmsg += "]的提督强行辞退，\n离开了我们镇守府…";
+		CQ_sendGroupMsg(ac, fromGroup, sendmsg.c_str());
+		
+	}
 
 	return EVENT_IGNORE; //关于返回值说明, 见“_eventPrivateMsg”函数
 }

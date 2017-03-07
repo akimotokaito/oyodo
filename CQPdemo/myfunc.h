@@ -36,5 +36,8 @@ wstring s2ws(const std::string& s);
 bool isNum(string str);
 string&   replace_all_distinct(string&   str, const  string&  old_value, const   string&   new_value);
 bool isManagerQQ(int64_t fromQQ);
+string lltos(long long l);
+string ltos( long l);
+string itos(int l);
 
 #endif

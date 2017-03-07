@@ -641,3 +641,39 @@ bool isManagerQQ(int64_t fromQQ)
 	}
 	return false;
 }
+
+// longlong类型转string
+string lltos(long long l)
+{
+	ostringstream os;
+	os << l;
+	string result;
+	istringstream is(os.str());
+	is >> result;
+	return result;
+
+}
+
+// long转string
+string ltos(long l)
+{
+	ostringstream os;
+	os << l;
+	string result;
+	istringstream is(os.str());
+	is >> result;
+	return result;
+
+}
+
+// int转string
+string itos(int i)
+{
+	ostringstream os;
+	os << i;
+	string result;
+	istringstream is(os.str());
+	is >> result;
+	return result;
+
+}
