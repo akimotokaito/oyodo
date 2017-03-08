@@ -304,7 +304,7 @@ CQEVENT(int32_t, __eventSystem_GroupMemberDecrease, 32)(int32_t subType, int32_t
 
 
 	if (subType == 1) { //主动退群
-		sendmsg += "淀酱要告诉大家一个很不幸的消息，\n就在不久的刚才，编号为：[";
+		sendmsg += "淀酱要告诉大家一个很不幸的消息，\n就在刚才，接到司令部的文件。\n编号为：[";
 		sendmsg += sBeingOpQQ;
 		sendmsg += "]的提督主动辞职，\n离开了我们镇守府…";
 		CQ_sendGroupMsg(ac, fromGroup, sendmsg.c_str());
@@ -319,7 +319,7 @@ CQEVENT(int32_t, __eventSystem_GroupMemberDecrease, 32)(int32_t subType, int32_t
 		sendmsg += sFromQQ;
 		sendmsg += "辞退，离开了";
 		CQ_sendGroupMsg(ac, fromGroup, sendmsg.c_str());*/
-		sendmsg += "淀酱要告诉大家一个很不幸的消息，\n就在不久的刚才，编号为：[";
+		sendmsg += "淀酱要告诉大家一个很不幸的消息，\n就在刚才，接到司令部的文件。\n编号为：[";
 		sendmsg += sBeingOpQQ;
 		sendmsg += "]的提督因[不可名状的理由]，\n被其上司，编号为：[";
 		sendmsg += sFromQQ; 
@@ -340,6 +340,34 @@ CQEVENT(int32_t, __eventSystem_GroupMemberDecrease, 32)(int32_t subType, int32_t
 */
 CQEVENT(int32_t, __eventSystem_GroupMemberIncrease, 32)(int32_t subType, int32_t sendTime, int64_t fromGroup, int64_t fromQQ, int64_t beingOperateQQ) {
 
+	string sendmsg;
+
+	string sSubType = itos(subType);
+	string sSendTime = itos(sendTime);
+	string sFromGroup = lltos(fromGroup);
+	string sFromQQ = lltos(fromQQ);
+	string sBeingOpQQ = lltos(beingOperateQQ);
+
+	if (subType == 1) { //管理员已同意
+		sendmsg += "各位提督，十分抱歉，淀酱打扰一下~\n欢迎编号为：[";
+		sendmsg += sBeingOpQQ;
+		sendmsg += "]的提督加入我们镇守府!\n祝您武运昌隆！";
+		CQ_sendGroupMsg(ac, fromGroup, sendmsg.c_str());
+	}
+	else if (subType == 2) { //管理员邀请
+		sendmsg += "打扰各位提督一下~\n欢迎编号为：[";
+		sendmsg += sBeingOpQQ;
+		sendmsg += "]的提督加入我们镇守府!\n请问您和编号为：[";
+		sendmsg += sFromQQ;
+		sendmsg += "]的提督是否有什么不可告人的关系？\n咳咳…淀酱多嘴了，总之祝您武运昌隆！";
+		CQ_sendGroupMsg(ac, fromGroup, sendmsg.c_str());
+		/*sendmsg += "淀酱要告诉大家一个很不幸的消息，\n就在刚才，接到司令部的文件。\n编号为：[";
+		sendmsg += sBeingOpQQ;
+		sendmsg += "]的提督因[不可名状的理由]，\n被其上司，编号为：[";
+		sendmsg += sFromQQ;
+		sendmsg += "]的提督强行辞退，\n离开了我们镇守府…";
+		CQ_sendGroupMsg(ac, fromGroup, sendmsg.c_str());*/
+	}
 	return EVENT_IGNORE; //关于返回值说明, 见“_eventPrivateMsg”函数
 }
 
@@ -509,11 +537,11 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 				sendmsg += to_string(sys.wSecond);// aa->tm_sec;
 				sendmsg += "秒";*/
 				if(workingst == WORK && baoshist == WORK){
-					CQ_sendGroupMsg(ac, MY_GRPNUM, sendmsg.c_str());
+					CQ_sendGroupMsg(ac, MY_GRPNUM, sendmsg.c_str());				
+					CQ_sendGroupMsg(ac, KANC_GRPNUM1, sendmsg.c_str());
+					CQ_sendGroupMsg(ac, KANC_GRPNUM2, sendmsg.c_str());
+					//CQ_sendPrivateMsg(ac, MY_QQNUM, sendmsg.c_str());
 				}
-				//CQ_sendGroupMsg(ac, TEST_GRPNUM, sendmsg.c_str());
-				//CQ_sendGroupMsg(ac, KANC_GRPNUM, sendmsg.c_str());
-				//CQ_sendPrivateMsg(ac, MY_QQNUM, sendmsg.c_str());
 				nFlag = false;
 				lasthour = sys.wHour;
 			}
