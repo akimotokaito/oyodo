@@ -94,8 +94,21 @@ int charge(const char *rcvmsg, string & sendmsg)
 		}else{
 			ret = gonglue(tmpstr.c_str(), sendmsg);; //攻略
 		}
-	}else 
+	}else /*if (strstr(tmpstr.c_str(), "禁言") != NULL)
 	{
+		//sql_search(rcvmsg, sendmsg);
+		if (tmpstr.size() > 100) {
+			return 0;
+		}
+		/*if (strstr(tmpstr.c_str(), "远征") != tmpstr) {
+			sendmsg = "提督您想了解远征相关的事的话，输入“远征”我会详细告诉您的！";
+			ret = 1;
+		}
+		else {
+		//ret = ban(tmpstr.c_str(), sendmsg);//远征
+		
+	}else*/{
+		//CQ_setGroupBan(ac, int64_t groupid, int64_t QQID, int64_t duration);
 		return ret;
 	}
 	//vector<string> rcvmsg = split(msg, " ");
@@ -144,6 +157,50 @@ long long sendgroupmsg(const char *msg, string & sendmsg)
 	}
 	return ret;
 }
+
+// 控制禁言的函数
+int ban(const char *msg, string & sendmsg)
+{
+	int ret = 0;
+	string tempmsg;
+	vector<string> rcvmsg;
+	vector<string>::iterator sit;
+	int i = 0;
+	//char * FilePath = "F:\\software\\kuq\\酷Q Air\\app\\com.steve.oyodo\\gonglue\\";
+	//char * FilePath = "app\\com.steve.oyodo\\gonglue\\";
+
+	//从字段‘禁言’开始将字符串截取存入sendmsg
+	tempmsg = strstr(msg, "禁言");
+	tempmsg.erase(0, 4);
+
+	rcvmsg = split(tempmsg, " ");
+	//下面这个循环把vector里所有内容为“”和“ ”的项全部删除
+	for (i = 0, sit = rcvmsg.begin(); sit != rcvmsg.end();)
+	{
+		if (rcvmsg[i] == "" || rcvmsg[i] == " ")
+		{
+			sit = rcvmsg.erase(sit);
+		}
+		else {
+			++sit;
+			++i;
+		}
+	}
+
+	switch (rcvmsg.size()) {
+	case 1: {
+		break;
+	}
+	case 2: {
+		break;
+	}
+	default:
+		break;
+	}
+
+	return ret;
+}
+
 
 // 控制远征的函数
 int yuanzheng(const char *msg, string & sendmsg)

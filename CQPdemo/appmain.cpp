@@ -451,19 +451,21 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 	//time(&tt);
 	//aa = localtime(&tt);
 
-	//获取系统时间，每次开启程序执行一次
-	/*GetLocalTime(&sys);
-	string firstlogin;
-	firstlogin += "现在是";
-	firstlogin += to_string(sys.wHour);// aa->tm_hour;
-	firstlogin += "时";
-	firstlogin += to_string(sys.wMinute);// aa->tm_min;
-	firstlogin += "分";
-	firstlogin += to_string(sys.wSecond);// aa->tm_sec;
-	firstlogin += "秒，提督您好！淀酱上班啦~";
-	CQ_sendGroupMsg(ac, MY_GRPNUM, firstlogin.c_str());
-	//CQ_sendGroupMsg(ac, KANC_GRPNUM, firstlogin.c_str());
-	//CQ_sendGroupMsg(ac, TEST_GRPNUM, firstlogin.c_str());*/
+	//获取系统时间，每次开启程序执行一次(9点到10点间开启的画才会上班第一次报时)
+	GetLocalTime(&sys);
+	if (sys.wHour >= 9 && sys.wHour <= 10) {
+		string firstlogin;
+		firstlogin += "现在是北京时间";
+		firstlogin += to_string(sys.wHour);// aa->tm_hour;
+		firstlogin += "时";
+		firstlogin += to_string(sys.wMinute);// aa->tm_min;
+		firstlogin += "分";
+		firstlogin += to_string(sys.wSecond);// aa->tm_sec;
+		firstlogin += "秒，提督您好！淀酱，开始上班啦~";
+		CQ_sendGroupMsg(ac, MY_GRPNUM, firstlogin.c_str());
+		CQ_sendGroupMsg(ac, KANC_GRPNUM1, firstlogin.c_str());
+		//CQ_sendGroupMsg(ac, TEST_GRPNUM, firstlogin.c_str());*/
+	}
 
 
 	// 根据当前时间确认是否为上班
@@ -539,7 +541,7 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 				if(workingst == WORK && baoshist == WORK){
 					CQ_sendGroupMsg(ac, MY_GRPNUM, sendmsg.c_str());				
 					CQ_sendGroupMsg(ac, KANC_GRPNUM1, sendmsg.c_str());
-					CQ_sendGroupMsg(ac, KANC_GRPNUM2, sendmsg.c_str());
+					//CQ_sendGroupMsg(ac, KANC_GRPNUM2, sendmsg.c_str());
 					//CQ_sendPrivateMsg(ac, MY_QQNUM, sendmsg.c_str());
 				}
 				nFlag = false;

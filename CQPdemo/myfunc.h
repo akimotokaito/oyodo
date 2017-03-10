@@ -9,6 +9,8 @@
 #include "sqlite3.h"  
 #include <sstream>  
 #include "windows.h"  
+//#include <afxinet.h>
+
 
 using namespace std;
 
