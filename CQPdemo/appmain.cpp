@@ -14,8 +14,8 @@ using namespace std;
 #include "myfunc.h"
 #include "mytimer.h"
 int ac = -1; //AuthCode 调用酷Q的方法时需要用到
-int workingst = NOTWORK;
-int baoshist = WORK;
+int workingst = NOTWORK; //工作状态
+int baoshist = NOTWORK;  //默认是否整点报时
 bool enabled = false;
 DWORD WINAPI funproc(LPVOID lpparentet);
 
@@ -94,14 +94,15 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t sendTime, int64
 	//ostringstream os;
 	int ret = 0;
 	string sendmsg("");
+	long sendint = 0;
 	//vector<string> rcvmsg = split(msg, " ");
 
 	//os << fromQQ;
 	//sendmsg = "收到来自" + os.str() + "的消息，消息内容是"+msg;
-	ret = charge(msg, sendmsg);
-	if (ret == 99 || ret == 98) {
-		if (isManagerQQ(fromQQ) && workingst != 99-ret) {
-			workingst = 99 - ret;
+	ret = charge(msg, sendmsg, sendint);
+	if (ret == STOP_WORK || ret == START_WORK) {
+		if (isManagerQQ(fromQQ) && workingst != START_WORK -ret) {
+			workingst = START_WORK - ret;
 			if (workingst == WORK){
 				CQ_sendPrivateMsg(ac, fromQQ, "上班！");
 			}
@@ -121,7 +122,7 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t sendTime, int64
 		CQ_sendPrivateMsg(ac, fromQQ, sendmsg2);*/
 		return EVENT_IGNORE;
 	}
-	if (ret == 10 && fromQQ == MY_QQNUM){
+	if (ret == SEND_CERTAINMSG && fromQQ == MY_QQNUM){
 		int64_t fromGroup = 0;
 		fromGroup = sendgroupmsg(msg, sendmsg);
 		if (fromGroup > 0 && !sendmsg.empty())
@@ -149,18 +150,19 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t
 
 	//ostringstream os;
 	string sendmsg("");
+	long sendint = 0;
 	int ret = 0;
 	//vector<string> rcvmsg = split(msg, " ");
 
 	//os << fromQQ;
 	//sendmsg = "收到来自" + os.str() + "的消息，消息内容是"+msg;
-	ret = charge(msg, sendmsg);
+	ret = charge(msg, sendmsg, sendint);
 	
 	// 管理员帐号控制上下班
-	if (ret == 99 || ret == 98) {
+	if (ret == START_WORK || ret == STOP_WORK) {
 		if (isManagerQQ(fromQQ)) {
-			if (workingst != 99 - ret) {
-				workingst = 99 - ret;
+			if (workingst != START_WORK - ret) {
+				workingst = START_WORK - ret;
 				if (workingst == WORK) {
 					CQ_sendGroupMsg(ac, fromGroup, "淀酱，开始上班了！");
 				}
@@ -186,10 +188,10 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t
 	}
 
 	// 管理员帐号控制是否报时
-	if (ret == 97 || ret == 96) {
+	if (ret == STOP_BAOSHI || ret == START_BAOSHI) {
 		if (isManagerQQ(fromQQ)) {		
-			if (baoshist != 97 - ret) {
-				baoshist = 97 - ret;
+			if (baoshist != START_BAOSHI - ret) {
+				baoshist = START_BAOSHI - ret;
 				if (baoshist == WORK) {
 					CQ_sendGroupMsg(ac, fromGroup, "那么就让淀酱为您报时吧！");
 				}
@@ -215,14 +217,45 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t
 		return EVENT_IGNORE;
 	}
 
+	// 管理员帐号控制禁言
+	if (ret == BAN) {
+		if (isManagerQQ(fromQQ)) {
+			if (sendint == 0) {
+				//CQ_sendPrivateMsg(ac, fromQQ, sendmsg.c_str());
+				if (strcmp(sendmsg.c_str(), "2469931868") != 0) {
+					CQ_setGroupBan(ac, fromGroup, stoi(sendmsg), 600);
+					CQ_sendGroupMsg(ac, fromGroup, "请好好反省一下。");
+				}
+				else {
+					CQ_sendGroupMsg(ac, fromGroup, "看来您的大脑需要让明石给修理一下。");
+				}
+				return EVENT_BLOCK;
+			}else{
+				//CQ_sendPrivateMsg(ac, fromQQ, sendmsg.c_str());
+			if (strcmp(sendmsg.c_str(), "2469931868") != 0) {
+				CQ_setGroupBan(ac, fromGroup, stoi(sendmsg), sendint);
+				CQ_sendGroupMsg(ac, fromGroup, "请好好反省一下呢。");
+					}
+				else {
+					CQ_sendGroupMsg(ac, fromGroup, "看来您的大脑需要让明石给修理一下。");
+				}
+				return EVENT_BLOCK;
+			}
+		}
+		else {
+			CQ_sendGroupMsg(ac, fromGroup, "对不起，您的军衔并没有该权限哦~");
+			return EVENT_IGNORE;
+		}
+	}
+
 	//CQ_sendPrivateMsg(ac, 526975248, msg);
 	if (ret == 0)
 	{
 		return EVENT_IGNORE;
-	}else if (ret/10 == 2) //远征的反馈
+	}else if (ret/10 == 2) //想要查询详细攻略的反馈
 	{
 		switch(ret%10){
-		case 0: //失败
+		case 0: //没有详细攻略
 			return EVENT_IGNORE;
 			break;
 		case 1:
@@ -444,6 +477,7 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 	//BOOL isFirst = true;
 	BOOL nFlag = true; //记录是否报过当前时,true为没报过时，false为报过
 	BOOL newFirst = true; //新年第一次报时flag
+	int lastYxFlag = -1; //记录当天是否提醒过演习
 	int lasthour = -1;
 	SYSTEMTIME sys;
 	//struct tm *aa;
@@ -460,8 +494,8 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 		firstlogin += "时";
 		firstlogin += to_string(sys.wMinute);// aa->tm_min;
 		firstlogin += "分";
-		firstlogin += to_string(sys.wSecond);// aa->tm_sec;
-		firstlogin += "秒，提督您好！淀酱，开始上班啦~";
+		//firstlogin += to_string(sys.wSecond);// aa->tm_sec;
+		firstlogin += "，提督您好！淀酱，开始上班啦~";
 		CQ_sendGroupMsg(ac, MY_GRPNUM, firstlogin.c_str());
 		CQ_sendGroupMsg(ac, KANC_GRPNUM1, firstlogin.c_str());
 		//CQ_sendGroupMsg(ac, TEST_GRPNUM, firstlogin.c_str());*/
@@ -477,7 +511,7 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 		workingst = NOTWORK;
 	}
 
-
+	// 时钟循环
 	while (TRUE) {
 
 		//memset(timez, 0, sizeof(timez));
@@ -497,7 +531,30 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 			sendmsgkcgrp += sendmsg;
 			sendmsgkcgrp += "请您打开支付宝-口令红包，\n输入：“淀酱祝各位提督新年快乐”\n领取由淀酱的父亲@小秋 赞助的红包~";
 			CQ_sendGroupMsg(ac, KANC_GRPNUM, sendmsgkcgrp.c_str());
-		}else */if (sys.wMinute == 0) {
+		}else */
+		
+		// 下面if里是2点前夕的演习提醒
+		if (sys.wDay != lastYxFlag && sys.wHour == 13 && ( sys.wMinute >= 30 && sys.wMinute <= 45)) {
+			string yxString;
+			if (workingst == WORK) {
+				lastYxFlag = sys.wDay;
+				yxString += "现在是北京时间";
+				yxString += to_string(sys.wHour);// aa->tm_hour;
+				yxString += "时";
+				yxString += to_string(sys.wMinute);// aa->tm_min;
+				yxString += "分";
+				//firstlogin += to_string(sys.wSecond);// aa->tm_sec;
+				yxString += "，提督您好！\n演习对手快要更新了，请不要忘记进行演习哦。\n每天有限次数的演习也是提升舰娘们战斗力的有效手段哦~";
+				CQ_sendGroupMsg(ac, MY_GRPNUM, yxString.c_str());
+				CQ_sendGroupMsg(ac, KANC_GRPNUM1, yxString.c_str());
+				//CQ_sendGroupMsg(ac, KANC_GRPNUM2, sendmsg.c_str());
+				//CQ_sendPrivateMsg(ac, MY_QQNUM, sendmsg.c_str());
+			}
+
+		}
+
+		// 下面if里是整点报时
+		if (sys.wMinute == 0) {
 			if (nFlag) { //如果没报过时 就报一次时，且记录下最后一次报时的小时数
 				string sendmsg;
 				ifstream File;

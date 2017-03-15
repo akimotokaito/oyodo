@@ -31,7 +31,7 @@ vector<string> split(string str,string pattern)
 }
 
 //字符串解析函数
-int charge(const char *rcvmsg, string & sendmsg)
+int charge(const char *rcvmsg, string & sendmsg, long & sendint)
 {
 	int ret = 0;
 	string tmpstr = rcvmsg;
@@ -51,9 +51,27 @@ int charge(const char *rcvmsg, string & sendmsg)
 	if (strstr(tmpstr.c_str(), "淀酱下班") != NULL  && tmpstr.size() <= 12) {
 		return 98; //下班返回值
 	}
+	if (strstr(tmpstr.c_str(), "禁闭") != NULL)
+	{
+		//sql_search(rcvmsg, sendmsg);
+		if (tmpstr.size() > 100) {
+			return 0;
+		}
+		/*if (strstr(tmpstr.c_str(), "远征") != tmpstr) {
+		sendmsg = "提督您想了解远征相关的事的话，输入“远征”我会详细告诉您的！";
+		ret = 1;
+		}
+		else {*/
+		ret = ban(tmpstr.c_str(), sendmsg, sendint);//禁言
+		return ret;
+	}
 	if (strstr(tmpstr.c_str(),"[CQ:at,qq=2469931868]") != NULL) {
 		tmpstr = replace_all_distinct(tmpstr, "[CQ:at,qq=2469931868]", " ");
-		return charge(tmpstr.c_str(), sendmsg);
+		if (strstr(tmpstr.c_str(), "roll") != NULL && tmpstr.size() <= 24) {
+			return getRandomNum(tmpstr.c_str(), sendmsg);
+		} else {
+			return charge(tmpstr.c_str(), sendmsg, sendint);
+		}
 	}
 	if (strstr(tmpstr.c_str(), "报时") != NULL  && tmpstr.size() <= 32) {
 		if(strstr(tmpstr.c_str(), "开始报时") != NULL ||
@@ -94,20 +112,7 @@ int charge(const char *rcvmsg, string & sendmsg)
 		}else{
 			ret = gonglue(tmpstr.c_str(), sendmsg);; //攻略
 		}
-	}else /*if (strstr(tmpstr.c_str(), "禁言") != NULL)
-	{
-		//sql_search(rcvmsg, sendmsg);
-		if (tmpstr.size() > 100) {
-			return 0;
-		}
-		/*if (strstr(tmpstr.c_str(), "远征") != tmpstr) {
-			sendmsg = "提督您想了解远征相关的事的话，输入“远征”我会详细告诉您的！";
-			ret = 1;
-		}
-		else {
-		//ret = ban(tmpstr.c_str(), sendmsg);//远征
-		
-	}else*/{
+	}else{
 		//CQ_setGroupBan(ac, int64_t groupid, int64_t QQID, int64_t duration);
 		return ret;
 	}
@@ -159,7 +164,7 @@ long long sendgroupmsg(const char *msg, string & sendmsg)
 }
 
 // 控制禁言的函数
-int ban(const char *msg, string & sendmsg)
+int ban(const char *msg, string & sendmsg, long & sendint)
 {
 	int ret = 0;
 	string tempmsg;
@@ -170,7 +175,7 @@ int ban(const char *msg, string & sendmsg)
 	//char * FilePath = "app\\com.steve.oyodo\\gonglue\\";
 
 	//从字段‘禁言’开始将字符串截取存入sendmsg
-	tempmsg = strstr(msg, "禁言");
+	tempmsg = strstr(msg, "禁闭");
 	tempmsg.erase(0, 4);
 
 	rcvmsg = split(tempmsg, " ");
@@ -189,9 +194,55 @@ int ban(const char *msg, string & sendmsg)
 
 	switch (rcvmsg.size()) {
 	case 1: {
+		// 只有一个参数，则禁言目标600S
+		//if (isNum(rcvmsg[0])) //如果只有一个参数且是数字
+		{
+			//"[CQ:at,qq=2469931868]"
+			//int num = 0;
+			//num = atoi(rcvmsg[0].c_str());
+			int pos = rcvmsg[0].find("[CQ:at,qq=");
+			if (pos >-1)
+			{
+				rcvmsg[0].erase(pos, 10);
+				rcvmsg[0].erase(rcvmsg[0].size()-1, 1);
+				sendmsg += rcvmsg[0];
+				ret = BAN;
+			}
+			else {
+				return 0;
+			}
+			/*if (1 < num && num <= 65000)
+			{
+				int resultNum = rand() % num + 1;
+				sendmsg += "您本次从[1, ";
+				sendmsg += itos(num);
+				sendmsg += "]中随机获得的数字为：";
+				sendmsg += itos(resultNum);
+				ret = 1;
+			}
+			else { //输入的数字不再目前远征编号范围内的话
+				sendmsg = "提督，请您输入正确的数字！";
+				ret = 1;
+			}*/
+		}
 		break;
 	}
 	case 2: {
+		int pos = rcvmsg[0].find("[CQ:at,qq=");
+		int num = atoi(rcvmsg[1].c_str());
+
+		if (pos >-1)
+		{
+			rcvmsg[0].erase(pos, 10);
+			rcvmsg[0].erase(rcvmsg[0].size() - 1, 1);
+			sendmsg += rcvmsg[0];
+			if (num > 0) {
+				sendint = num;
+			}
+			ret = BAN;
+		}else{
+			return 0;
+		}
 		break;
 	}
 	default:
@@ -201,6 +252,98 @@ int ban(const char *msg, string & sendmsg)
 	return ret;
 }
 
+// 获取随机数roll随机数
+int getRandomNum(const char *msg, string & sendmsg)
+{
+	string tempmsg;
+	vector<string> rcvmsg;
+	vector<string>::iterator sit;
+	int i = 0;
+	int ret = 0;
+
+	//从字段‘roll’开始将字符串截取存入sendmsg
+	tempmsg = strstr(msg, "roll");
+	tempmsg.erase(0, 4);
+
+	rcvmsg = split(tempmsg, " ");
+
+	//下面这个循环把vector里所有内容为“”和“ ”的项全部删除
+	for (i = 0, sit = rcvmsg.begin(); sit != rcvmsg.end();)
+	{
+		if (rcvmsg[i] == "" || rcvmsg[i] == " ")
+		{
+			sit = rcvmsg.erase(sit);
+		}
+		else {
+			++sit;
+			++i;
+		}
+	}
+
+	srand(time(0));
+	switch (rcvmsg.size()) {
+	case 0: {
+		// 从1-100随机生成
+		int resultNum = rand() % 100 + 1;
+		sendmsg += "您本次从[1, 100]中随机获得数字为：";
+		sendmsg += itos(resultNum);
+		ret = 1;
+		break;
+	}
+	case 1: {
+		// 从1-X随机生成
+		if (isNum(rcvmsg[0])) //如果只有一个参数且是数字
+		{
+			int num = 0;
+			num = atoi(rcvmsg[0].c_str());
+			if (1 < num && num <= 65000)
+			{
+				int resultNum = rand() % num + 1;
+				sendmsg += "您本次从[1, "; 
+				sendmsg += itos(num);
+				sendmsg += "]中随机获得的数字为：";
+				sendmsg += itos(resultNum);
+				ret = 1;
+			}
+			else { //输入的数字不再目前远征编号范围内的话
+				sendmsg = "提督，请您输入正确的数字！";
+				ret = 1;
+			}
+		}
+		break;
+	}
+	case 2: {
+		// 从A-B随机生成
+		if (isNum(rcvmsg[0]) && isNum(rcvmsg[1])) //如果只有2个参数且是数字
+		{
+			int num1 = 0;
+			int num2 = 0;
+			num1 = atoi(rcvmsg[0].c_str());
+			num2 = atoi(rcvmsg[1].c_str());
+			if (1 <= num1 && num1 <= num2 && num2 <= 65000 )
+			{
+				int resultNum = rand() % (num2-num1+1) + num1;
+				sendmsg += "您本次从[";
+				sendmsg += itos(num1);
+				sendmsg += ", ";
+				sendmsg += itos(num2);
+				sendmsg += "]中随机获得的数字为：";
+				sendmsg += itos(resultNum);
+				ret = 1;
+			}
+			else { //输入的数字不再目前远征编号范围内的话
+				sendmsg = "提督，请您输入正确的数字！";
+				ret = 1;
+			}
+		}
+		break;
+	}
+	default:
+		break;
+	}
+
+	return ret;
+}
 
 // 控制远征的函数
 int yuanzheng(const char *msg, string & sendmsg)
@@ -386,11 +529,11 @@ int gonglue(const char *msg, string & sendmsg)
 			sprintf(FileName2,"%s%s%s", FilePath, rcvmsg[0].c_str(),".txt");
 			if (readfiletomsg(FileName, sendmsg) == 1)  //存在详细攻略的情况下
 			{
-				ret = 21;
+				ret = FIND_GONGLUE_XX;
 			}else if(readfiletomsg(FileName2, sendmsg) == 1){ //不存在详细，但存在简略攻略
-				ret = 22;
+				ret = FIND_GONGLUE;
 			}else{ //都不存在
-				ret = 20;
+				ret = CANNOT_FIND_GONGLUE;
 			}
 		}	
 		break;
@@ -461,7 +604,12 @@ int sql_searchbycat(const char *msg, string & sendmsg)
 	//sendmsg = strOut;
 	sqlite3_close(pDB);  
 	ret = nRow;
-	return ret; 
+	if (ret > 0) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
 }
 
 // 根据远征编号查找结果
@@ -595,8 +743,12 @@ int sql_searchbynum(const char *msg, string & sendmsg)
 	//cout<<strOut<<endl;  
 	sendmsg += ws2s(Utf8ToUnicode(strOut));
 	sqlite3_close(pDB);  
-
-	return ret;
+	if (ret > 0) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
 }
 
 // UTF-8转成UNICODE格式
@@ -689,7 +841,7 @@ string&   replace_all_distinct(string&   str, const  string&  old_value, const  
 // 判断是否是管理员QQ
 bool isManagerQQ(int64_t fromQQ)
 {
-	int64_t managerQQ[] = { MY_QQNUM , TEST_QQNUM, 839551855};
+	int64_t managerQQ[] = { MY_QQNUM , TEST_QQNUM, 839551855 ,996938361 };
 	
 	for (int i = 0; i < sizeof(managerQQ)/sizeof(int64_t); i++) {
 		if (fromQQ == managerQQ[i]) {
