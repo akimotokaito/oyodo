@@ -495,9 +495,9 @@ DWORD WINAPI funproc(LPVOID lpparentet)
 		firstlogin += to_string(sys.wMinute);// aa->tm_min;
 		firstlogin += "分";
 		//firstlogin += to_string(sys.wSecond);// aa->tm_sec;
-		firstlogin += "，提督您好！淀酱，开始上班啦~";
+		firstlogin += "，提督，早上好！新的一天开始了，淀酱也要开始上班啦~";
 		CQ_sendGroupMsg(ac, MY_GRPNUM, firstlogin.c_str());
-		CQ_sendGroupMsg(ac, KANC_GRPNUM1, firstlogin.c_str());
+		//CQ_sendGroupMsg(ac, KANC_GRPNUM1, firstlogin.c_str());
 		//CQ_sendGroupMsg(ac, TEST_GRPNUM, firstlogin.c_str());*/
 	}
 
